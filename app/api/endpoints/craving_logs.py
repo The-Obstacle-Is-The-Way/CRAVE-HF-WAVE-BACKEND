@@ -47,3 +47,31 @@ def create_craving(req: CreateCravingRequest, db: Session = Depends(get_db)):
     output = ingest_craving(input_dto, repo)
     # Return the response by unpacking the output object's attributes.
     return CravingResponse(**output.__dict__)
+
+# crave_trinity_backend/app/api/endpoints/craving_logs.py
+
+from fastapi import APIRouter, Depends, Query
+from typing import List
+from sqlalchemy.orm import Session
+from app.api.dependencies import get_db
+from app.core.use_cases.search_cravings import (
+    SearchCravingsInput, 
+    search_cravings,
+    CravingSearchResult
+)
+
+...
+
+@router.get("/cravings/search", tags=["Cravings"])
+def search_cravings_endpoint(
+    user_id: int = Query(..., description="User ID"),
+    query_text: str = Query(..., description="Query text for similarity"),
+    top_k: int = Query(5, description="Number of results to return")
+):
+    input_dto = SearchCravingsInput(
+        user_id=user_id,
+        query_text=query_text,
+        top_k=top_k
+    )
+    results = search_cravings(input_dto)
+    return {"results": [r.__dict__ for r in results]}

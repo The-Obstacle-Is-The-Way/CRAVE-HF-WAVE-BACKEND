@@ -1,23 +1,27 @@
 # crave_trinity_backend/app/api/main.py
 from fastapi import FastAPI
-from app.api.endpoints import health
-from app.api.endpoints import craving_logs  # NEW
-from app.config.settings import Settings
+from app.api.endpoints import health, craving_logs
+from app.infrastructure.vector_db.pinecone_client import init_pinecone
 
 def create_app() -> FastAPI:
+    """
+    Creates and configures the FastAPI application.
+    
+    Routers are included and startup events are defined here.
+    """
     app = FastAPI(
         title="CRAVE Trinity Backend",
-        description="Clean Architecture FastAPI Backend for CRAVE",
-        version="0.2.0",
+        description="Backend for craving analytics",
+        version="0.1.0"
     )
-
-    # Existing health router
     app.include_router(health.router)
-
-    # NEW: Include cravings router
     app.include_router(craving_logs.router)
+
+    @app.on_event("startup")
+    def startup_event():
+        # Initialize Pinecone on startup
+        init_pinecone()
 
     return app
 
-settings = Settings()
 app = create_app()

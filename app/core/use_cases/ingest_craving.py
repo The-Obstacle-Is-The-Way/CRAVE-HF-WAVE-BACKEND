@@ -42,3 +42,28 @@ def ingest_craving(input_dto: IngestCravingInput, repo: CravingRepository) -> In
         intensity=saved_craving.intensity,
         created_at=saved_craving.created_at,
     )
+
+# ingest_craving.py
+from app.infrastructure.external.openai_embedding import OpenAIEmbeddingService
+from app.infrastructure.vector_db.vector_repository import VectorRepository
+
+...
+
+def ingest_craving(input_dto: IngestCravingInput, repo: CravingRepository) -> IngestCravingOutput:
+    ...
+    saved_craving = repo.create_craving(domain_craving)
+
+    # Now optionally embed + store in Pinecone
+    try:
+        embed_service = OpenAIEmbeddingService()
+        embedding = embed_service.embed_text(saved_craving.description)
+
+        # You can store user_id, created_at, etc. in metadata
+        vector_repo = VectorRepository()
+        metadata = {"user_id": saved_craving.user_id, "created_at": str(saved_craving.created_at)}
+        vector_repo.upsert_craving_embedding(saved_craving.id, embedding, metadata)
+    except Exception as e:
+        # Log it, or handle gracefully
+        pass
+
+    return IngestCravingOutput(...)
