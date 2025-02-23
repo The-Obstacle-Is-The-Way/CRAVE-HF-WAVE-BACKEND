@@ -11,6 +11,8 @@ This repository demonstrates an **end-to-end system**—from **initial setup** a
 * 🔗 Frontend (SwiftUI + SwiftData + MVVM) → [crave-trinity-frontend](https://github.com/Crave-Trinity/crave-trinity-frontend)
 * 🔗 Backend (FastAPI + PostgreSQL + Pinecone + Llama 2) → [crave-trinity-backend](https://github.com/Crave-Trinity/crave-trinity-backend)
 
+---
+
 ⚠️ Disclaimer: CRAVE intends to provide analytical insights based on user-logged cravings data.
 
 It will not offer medical predictions, diagnoses, or treatment prior to FDA SaMD approval.
