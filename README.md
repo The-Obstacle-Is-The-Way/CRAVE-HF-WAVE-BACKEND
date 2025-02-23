@@ -12,6 +12,7 @@ This repository demonstrates an **end-to-end system**—from **initial setup** a
 * 🔗 Backend (FastAPI + PostgreSQL + Pinecone + Llama 2) → [crave-trinity-backend](https://github.com/Crave-Trinity/crave-trinity-backend)
 
 ---
+
 ## 🌊 Vision
 CRAVE-WAVE strives to be the world’s first self-optimizing craving intelligence system—a backend powered by Vertical AI, ensuring that craving personas, retrieval strategies, and inference evolve dynamically as moat and user behavior shift.
 
@@ -26,6 +27,8 @@ CRAVE-WAVE strives to be the world’s first self-optimizing craving intelligenc
 
 🚀 Autonomous AI Fine-Tuning: 
 * Instead of relying on human intervention, CRAVE uses Reinforcement Learning (RLHF) to iteratively refine LoRA persona deployment and retrieval logic. It’s an AI system that learns how to optimize itself—so performance improves continuously.
+  
+---
 
 🔗 The Core AI Infrastructure
 
