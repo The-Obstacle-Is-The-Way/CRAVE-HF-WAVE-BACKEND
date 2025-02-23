@@ -1,4 +1,4 @@
-# 🌊 CRAVE WAVE (Trinity Backend): The First Backend AI Vertical Optimization for Craving Intelligence
+# 🌊 CRAVE WAVE (Trinity Backend): Backend AI Vertical Optimization for Craving Intelligence
 [FastAPI + PostgreSQL + Pinecone + Llama 2]
 
 ## 🌟 Overview  
