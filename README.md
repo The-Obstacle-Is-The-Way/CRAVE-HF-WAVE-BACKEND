@@ -154,21 +154,102 @@ This loads **Llama 2 + LoRA adapters** and runs a **test inference prompt**.
 ## 📂 File Structure  
 
 ```plaintext
+jj@DESKTOP-L9V85UA:/mnt/c/Users/JJ/Desktop/CRAVE/crave_trinity_backend$ tree -I ".git"
 .
 ├── Dockerfile
-├── docker-compose.yml
 ├── README.md
 ├── alembic.ini
-├── app/
-│   ├── api/           # API endpoints
-│   ├── config/        # Settings & logging
-│   ├── core/          # Business logic (use cases)
-│   ├── infrastructure/# Database, external APIs, vector DBs
-│   ├── models/        # AI model handling (Llama2 + LoRA)
-├── infra/             # Deployment configs (AWS, K8s, Docker)
-├── main.py            # Application entry point
-├── requirements.txt   # Dependencies
-└── tests/             # Unit & integration tests
+├── app
+│   ├── api
+│   │   ├── dependencies.py
+│   │   ├── endpoints
+│   │   │   ├── ai_endpoints.py
+│   │   │   ├── craving_logs.py
+│   │   │   ├── dependencies.py
+│   │   │   ├── health.py
+│   │   │   └── user_queries.py
+│   │   └── main.py
+│   ├── config
+│   │   ├── __pycache__
+│   │   │   └── settings.cpython-310.pyc
+│   │   ├── logging.py
+│   │   └── settings.py
+│   ├── container
+│   │   ├── Dockerfile
+│   │   └── ecs_config.yaml
+│   ├── core
+│   │   ├── entities
+│   │   │   ├── craving.py
+│   │   │   └── user.py
+│   │   ├── services
+│   │   │   ├── analytics_service.py
+│   │   │   ├── embedding_service.py
+│   │   │   ├── lora_manager.py
+│   │   │   ├── pattern_detection_service.py
+│   │   │   └── rag_service.py
+│   │   └── use_cases
+│   │       ├── generate_craving_insights.py
+│   │       ├── ingest_craving.py
+│   │       ├── manage_metadata.py
+│   │       ├── process_query.py
+│   │       └── search_cravings.py
+│   ├── infrastructure
+│   │   ├── auth
+│   │   │   ├── auth_service.py
+│   │   │   ├── oauth_provider.py
+│   │   │   └── user_manager.py
+│   │   ├── database
+│   │   │   ├── __pycache__
+│   │   │   │   └── models.cpython-310.pyc
+│   │   │   ├── migrations
+│   │   │   │   ├── README
+│   │   │   │   ├── __pycache__
+│   │   │   │   │   └── env.cpython-310.pyc
+│   │   │   │   ├── env.py
+│   │   │   │   ├── script.py.mako
+│   │   │   │   └── versions
+│   │   │   │       ├── 200c7d532370_initial_tables_users_cravings.py
+│   │   │   │       └── __pycache__
+│   │   │   │           └── 200c7d532370_initial_tables_users_cravings.cpython-310.pyc
+│   │   │   ├── models.py
+│   │   │   └── repository.py
+│   │   ├── external
+│   │   │   ├── langchain_integration.py
+│   │   │   └── openai_embedding.py
+│   │   ├── llm
+│   │   │   ├── huggingface_integration.py
+│   │   │   ├── llama2_adapter.py
+│   │   │   └── lora_adapter.py
+│   │   └── vector_db
+│   │       ├── pinecone_client.py
+│   │       └── vector_repository.py
+│   └── models
+│       └── llama2_model.py
+├── docker-compose.yml
+├── docs
+│   ├── architecture.md
+│   └── roadmap.md
+├── infra
+│   ├── aws
+│   ├── docker
+│   └── k8s
+├── main.py
+├── pyproject.toml
+├── requirements.txt
+└── tests
+    ├── integration
+    │   ├── test_ai_endpoints.py
+    │   ├── test_api.py
+    │   └── test_craving_search_api.py
+    ├── test_basic.py
+    └── unit
+        ├── test_auth_service.py
+        ├── test_ingest_craving.py
+        ├── test_lora_adapter.py
+        ├── test_rag_service.py
+        └── test_search_cravings.py
+
+30 directories, 62 files
 ```
 
 ---
