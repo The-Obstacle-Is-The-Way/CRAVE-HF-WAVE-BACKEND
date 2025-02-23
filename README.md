@@ -16,13 +16,17 @@ This repository demonstrates an **end-to-end system**—from **initial setup** a
 
 🌊 CRAVE-WAVE strives to be the world’s first self-optimizing craving intelligence system—a backend powered by Vertical AI, ensuring that craving personas, retrieval strategies, and inference optimizations evolve dynamically as moat and user behavior shift.
 
-🧠 LoRA Persona Hot-Swapping: AI doesn’t just retrieve user insights—it ensures that only the most relevant craving personas are running at any given time. Unused personas are dynamically offloaded, and active personas are auto-optimized based on real-world craving triggers.
+🧠 LoRA Persona Hot-Swapping: 
+* AI doesn’t just retrieve user insights—it ensures that only the most relevant craving personas are running at any given time. Unused personas are dynamically offloaded, and active personas are auto-optimized based on real-world craving triggers.
 
-🔍 RAG Time Compression & Sequencing: Forget static retrieval pipelines. CRAVE’s retrieval strategy adapts over time, ensuring that recent cravings are prioritized, while older patterns are compressed & summarized intelligently.
+🔍 RAG Time Compression & Sequencing: 
+* Forget static retrieval pipelines. CRAVE’s retrieval strategy adapts over time, ensuring that recent cravings are prioritized, while older patterns are compressed & summarized intelligently.
 
-⚡ Self-Tuning GPU & VRAM Optimization: The system continuously monitors hardware utilization—adjusting VRAM allocation, inference batching, and persona swapping to ensure real-time efficiency without bottlenecks.
+⚡ Self-Tuning GPU & VRAM Optimization: 
+* The system continuously monitors hardware utilization—adjusting VRAM allocation, inference batching, and persona swapping to ensure real-time efficiency without bottlenecks.
 
-🚀 Autonomous AI Fine-Tuning: Instead of relying on human intervention, CRAVE uses Reinforcement Learning (RLHF) to iteratively refine LoRA persona deployment and retrieval logic. It’s an AI system that learns how to optimize itself—so performance improves continuously.
+🚀 Autonomous AI Fine-Tuning: 
+* Instead of relying on human intervention, CRAVE uses Reinforcement Learning (RLHF) to iteratively refine LoRA persona deployment and retrieval logic. It’s an AI system that learns how to optimize itself—so performance improves continuously.
 
 🔗 The Core AI Infrastructure
 
