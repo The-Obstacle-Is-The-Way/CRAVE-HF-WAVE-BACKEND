@@ -1,7 +1,6 @@
 # 🌊 CRAVE WAVE (Trinity Backend): AI Vertical Optimization for Craving Intelligence
 
 ## 🌟 Overview  
-
 CRAVE WAVE (Trinity Backend) is a **modular, Dockerized FastAPI application** built with **clean architecture** principles. It is designed to **track and analyze user cravings** and integrates multiple external services, including:  
 
 - 🛢 **PostgreSQL** for structured data storage  
