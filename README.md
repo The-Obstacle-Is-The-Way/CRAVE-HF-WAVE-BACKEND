@@ -12,8 +12,8 @@ This repository demonstrates an **end-to-end system**—from **initial setup** a
 * 🔗 Backend (FastAPI + PostgreSQL + Pinecone + Llama 2) → [crave-trinity-backend](https://github.com/Crave-Trinity/crave-trinity-backend)
 
 ---
-
-🌊 CRAVE-WAVE strives to be the world’s first self-optimizing craving intelligence system—a backend powered by Vertical AI, ensuring that craving personas, retrieval strategies, and inference evolve dynamically as moat and user behavior shift.
+## 🌊 Vision
+CRAVE-WAVE strives to be the world’s first self-optimizing craving intelligence system—a backend powered by Vertical AI, ensuring that craving personas, retrieval strategies, and inference evolve dynamically as moat and user behavior shift.
 
 🧠 LoRA Persona Hot-Swapping: 
 * AI doesn’t just retrieve user insights—it ensures that only the most relevant craving personas are running at any given time. Unused personas are dynamically offloaded, and active personas are auto-optimized based on real-world craving triggers.
