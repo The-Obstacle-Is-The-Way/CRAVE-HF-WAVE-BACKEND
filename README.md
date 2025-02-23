@@ -1,4 +1,4 @@
-# 🚀 CRAVE Trinity Backend (FastAPI + Clean Architecture)  
+# 🚀 CRAVE Trinity Backend (FastAPI + PostgreSQL + Pinecone + Llama 2)
 
 ## 🌟 Overview  
 
