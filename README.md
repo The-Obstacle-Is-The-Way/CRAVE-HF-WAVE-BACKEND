@@ -1,4 +1,4 @@
-# 🌊 CRAVE WAVE (Trinity Backend): Backend AI Vertical Optimization for Craving Intelligence
+# 🌊 CRAVE WAVE (Trinity Backend): AI Vertical Optimization for Craving Intelligence
 
 ## 🌟 Overview  
 
