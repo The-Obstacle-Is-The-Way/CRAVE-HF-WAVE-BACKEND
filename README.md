@@ -254,7 +254,7 @@ jj@DESKTOP-L9V85UA:/mnt/c/Users/JJ/Desktop/CRAVE/crave_trinity_backend$ tree -I 
 
 ---
 
-- [Backend repo](https://github.com/Crave-Trinity/crave-trinity-frontend)
+[Frontend repo](https://github.com/Crave-Trinity/crave-trinity-frontend)
 
 ---
 
