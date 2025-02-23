@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: crave_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  fast-api:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    environment:
+      # Update your connection string here so that it points to the DB service.
+      SQLALCHEMY_DATABASE_URI: "postgresql://postgres:password@db:5432/crave_db"
+    volumes:
+      - .:/app  # Optional: to sync code changes for local dev
+
+volumes:
+  pgdata:

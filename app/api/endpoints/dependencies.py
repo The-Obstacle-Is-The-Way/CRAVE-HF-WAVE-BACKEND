@@ -1,13 +1,16 @@
 # crave_trinity_backend/app/api/dependencies.py
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from app.config.settings import Settings
 
-# Placeholder. For example, we'll add DB session management or 
-# get_current_user logic here in future batches.
+settings = Settings()
 
-def get_settings():
-    """
-    In future, fetch from pydantic Settings object, e.g.:
-    from app.config.settings import Settings
-    settings = Settings()
-    return settings
-    """
-    return {}
+engine = create_engine(settings.SQLALCHEMY_DATABASE_URI, echo=False)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
