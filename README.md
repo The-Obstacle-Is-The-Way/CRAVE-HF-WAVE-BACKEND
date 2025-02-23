@@ -14,7 +14,7 @@ This repository demonstrates an **end-to-end system**—from **initial setup** a
 
 ## 🏗 Architecture & Batches  
 
-The project is organized into **batches**, breaking the development process into structured steps:  
+The project was developed with AI-acceleration/basecode abstraction through modular **batches**, breaking the development process into structured steps:  
 
 ### 🔹 Batch 1 – Initial Setup  
 📌 Clone the repository, install dependencies, and configure the environment.  
