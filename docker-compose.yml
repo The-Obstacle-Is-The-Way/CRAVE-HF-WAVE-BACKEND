@@ -16,9 +16,8 @@ services:
       - db
     ports:
       - "8000:8000"
-    environment:
-      # Update your connection string here so that it points to the DB service.
-      SQLALCHEMY_DATABASE_URI: "postgresql://postgres:password@db:5432/crave_db"
+    env_file:
+      - .env  # ✅ This ensures FastAPI loads all API keys
     volumes:
       - .:/app  # Optional: to sync code changes for local dev
 
