@@ -1,34 +1,21 @@
-# Use an official Python runtime as a parent image
-FROM python:3.11-slim
-
-# Set environment variables to prevent Python from writing .pyc files
-# and to ensure stdout/stderr are unbuffered.
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+# Use an appropriate base image
+FROM python:3.9-slim
 
 # Set the working directory inside the container
 WORKDIR /app
 
-# Install system dependencies:
-# - git: required for Hugging Face authentication
-# - gcc: for compiling packages
-# - ca-certificates: necessary for HTTPS connections (e.g., for Pinecone)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    gcc \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Install curl and other necessary dependencies
+RUN apt update && apt install -y curl && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements.txt into the container and install Python dependencies
-COPY requirements.txt . 
-RUN pip install --upgrade pip
+# Copy and install dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of your project into the container
+# Copy the rest of your app files
 COPY . .
 
-# Expose port 8000 for the FastAPI application
+# Expose the port your FastAPI app runs on
 EXPOSE 8000
 
-# Run the FastAPI application with Uvicorn
-CMD ["uvicorn", "app.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Command to run your FastAPI app
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
