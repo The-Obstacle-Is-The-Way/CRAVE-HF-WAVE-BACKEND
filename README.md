@@ -1,13 +1,13 @@
 # 🌊 CRAVE WAVE (Trinity Backend): Vertical AI Optimization for Craving Intelligence
 
 ## 🌟 Overview  
-CRAVE WAVE (Trinity Backend) is a **modular, Dockerized FastAPI application** built with **clean architecture** principles. It is designed to **track and analyze user cravings** and integrates multiple external services, including:  
+CRAVE WAVE (Trinity Backend) is a modular, Dockerized FastAPI application built with clean architecture principles. It is designed to track and analyze user cravings** and integrates multiple external services, including:  
 
 - 🛢 **PostgreSQL** for structured data storage  
 - 🧠 **Pinecone** for vector-based retrieval 
 - 🤖 **Llama 2 with LoRA integration** for AI-powered insights
 
-This repository demonstrates an **end-to-end system**—from **initial setup** and **database migrations** to **AI model inference with LoRA adapters**.  
+This repository demonstrates an end-to-end system—from initial setup and database migrations to AI model inference with LoRA adapters.  
 * 🔗 Frontend (SwiftUI + SwiftData + MVVM) → [crave-trinity-frontend](https://github.com/Crave-Trinity/crave-trinity-frontend)
 * 🔗 Backend (FastAPI + PostgreSQL + Pinecone + Llama 2) → [crave-trinity-backend](https://github.com/Crave-Trinity/crave-trinity-backend)
 
@@ -97,7 +97,7 @@ jj@DESKTOP-L9V85UA:/mnt/c/Users/JJ/Desktop/CRAVE/crave_trinity_backend$ tree -I 
 #                                                                              
 #   - Anthony Bourdain                                                         
 #                                                                              
-#   CRAVE: Because understanding our cravings is the first step to mastery.    
+#   CRAVE: Because understanding our cravings shouldn't be complicated 🍫
 #                                                                              
 ################################################################################
 #
@@ -206,9 +206,9 @@ jj@DESKTOP-L9V85UA:/mnt/c/Users/JJ/Desktop/CRAVE/crave_trinity_backend$ tree -I 
 
 Before you begin, ensure you have the following installed:  
 
-- 🐳 **Docker & Docker Compose** for containerized setup  
-- 🐍 **Python 3.11** (if running locally)  
-- 🤗 **Hugging Face CLI** (if using private models, run `huggingface-cli login`)  
+- 🐳 Docker & Docker Compose for containerized setup  
+- 🐍 Python 3.11 (if running locally)  
+- 🤗 Hugging Face CLI (if using private models, run `huggingface-cli login`)  
 
 ### 📥 Clone the Repository  
 
@@ -289,18 +289,18 @@ This loads **Llama 2 + LoRA adapters** and runs a **test inference prompt**.
 ## 🛠 Technical Details  
 
 - 🐳 **Dockerized Setup**  
-  - The backend is containerized with **Python 3.11-slim** for efficiency.  
+  - The backend is containerized with Python 3.11-slim for efficiency.  
 
 - 🛢 **Database**  
   - Uses **PostgreSQL**, managed via **Alembic** migrations.  
 
 - 📡 **External Services**  
-  - **Pinecone** for **vector storage & retrieval**.  
-  - **OpenAI** for **text embeddings** and craving analysis.  
+  - **Pinecone** for vector storage & retrieval.  
+  - **OpenAI** for text embeddings and craving analysis.  
 
 - 🤖 **AI Model (Batch 4)**  
-  - **Llama 2** runs via **Hugging Face Transformers**.  
-  - **LoRA adapters** fine-tune AI insights with **PEFT**.  
+  - Llama 2 runs via Hugging Face Transformers.  
+  - LoRA adapters fine-tune AI insights with PEFT.  
 
 ---
 
