@@ -1,4 +1,4 @@
-# 🌊 CRAVE WAVE (Trinity Backend): AI Vertical Optimization for Craving Intelligence
+# 🌊 CRAVE WAVE (Trinity Backend): Vertical AI Optimization for Craving Intelligence
 
 ## 🌟 Overview  
 CRAVE WAVE (Trinity Backend) is a **modular, Dockerized FastAPI application** built with **clean architecture** principles. It is designed to **track and analyze user cravings** and integrates multiple external services, including:  
@@ -19,6 +19,8 @@ It will not offer medical predictions, diagnoses, or treatment prior to FDA SaMD
 Any behavioral insights should be viewed as informational only, and users should consult a healthcare professional for medical or therapeutic guidance.
 
 ---
+
+![CRAVE Architecture](docs/crave-trinity-architecture-fixed.svg)
 
 ## 🌊 Vision
 CRAVE-WAVE strives to be the world’s first self-optimizing craving intelligence system—a backend powered by Vertical AI, ensuring that craving personas, retrieval strategies, and inference evolve dynamically as moat and user behavior shift.
