@@ -18,7 +18,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install dependencies
+# ✅ Install torch first to avoid xformers failing
+RUN pip install torch==2.0.1
+
+# ✅ Now copy and install all dependencies
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
