@@ -23,38 +23,28 @@ Any behavioral insights should be viewed as informational only, and users should
 ![CRAVE Architecture](docs/crave-trinity-architecture-fixed.svg)
 
 ## 🌊 Vision
-CRAVE-WAVE strives to be the world’s first self-optimizing craving intelligence system—a backend powered by Vertical AI, ensuring that craving personas, retrieval strategies, and inference evolve dynamically as moat and user behavior shift.
+CRAVE-WAVE
+The world's first self-optimizing craving intelligence system—a backend powered by Vertical AI, ensuring that craving personas, retrieval strategies, and inference evolve dynamically as moat and user behavior shift.
 
-🧠 LoRA Persona Hot-Swapping: 
-* AI doesn’t just retrieve user insights—it ensures that only the most relevant craving personas are running at any given time. Unused personas are dynamically offloaded, and active personas are auto-optimized based on real-world craving triggers.
+🧠 Intelligent Persona System
 
-🔍 RAG Time Compression & Sequencing: 
-* Forget static retrieval pipelines. CRAVE’s retrieval strategy adapts over time, ensuring that recent cravings are prioritized, while older patterns are compressed & summarized intelligently.
+AI-powered LoRA hot-swapping ensures only relevant craving personas are active, with dynamic offloading of unused personas and continuous optimization based on real-world triggers
+Reinforcement Learning (RLHF) framework automatically refines persona deployment and selection strategies
+Custom attention mechanisms and adapter weights evolve based on user interaction patterns
 
-⚡ Self-Tuning GPU & VRAM Optimization: 
-* The system continuously monitors hardware utilization—adjusting VRAM allocation, inference batching, and persona swapping to ensure real-time efficiency without bottlenecks.
+🔍 Advanced Retrieval & Memory
 
-🚀 Autonomous AI Fine-Tuning: 
-* Instead of relying on human intervention, CRAVE uses Reinforcement Learning (RLHF) to iteratively refine LoRA persona deployment and retrieval logic. It’s an AI system that learns how to optimize itself—so performance improves continuously.
-  
----
+Time-compressed RAG pipeline that prioritizes recent cravings while intelligently summarizing long-term patterns
+Dynamic retrieval scaling adjusts vector DB query depth and response relevance based on historical interactions
+Intelligent caching system creates compressed trend markers for cost-efficient, rapid retrieval
+Hybrid dense/sparse vector indexing for optimal context matching
 
-🔗 The Core AI Infrastructure
+⚡ Self-Optimizing Infrastructure
 
-1️⃣ Vertical AI Agent for Autonomous LoRA Persona Management
-* ✔ Monitors real-world craving events and dynamically deploys, swaps, or removes LoRA fine-tuned personas in real time.
-* ✔ Hot-swap framework to keep only the most relevant craving personas in active VRAM.
-* ✔ Self-improving persona selection via Reinforcement Learning (RLHF) to enhance accuracy over time.
-
-2️⃣ Adaptive RAG Retrieval & Time Compression
-* ✔ Recency-Weighted Memory: Prioritizes recent cravings but summarizes long-term trends to prevent AI bloating.
-* ✔ Dynamic Retrieval Scaling: Adjusts vector DB query depth & response relevance based on past user interactions.
-* ✔ Time-Aware Insight Caching: Creates compressed trend markers so retrieval remains fast & cost-efficient.
-
-3️⃣ Self-Tuning AI Inference Optimization
-* ✔ Real-Time VRAM/CPU Monitoring: Adjusts hardware usage based on demand.
-* ✔ Quantization & Adaptive Batching: Ensures LLaMA/LoRA models run at peak efficiency with minimal compute lag.
-* ✔ Scales automatically with user volume: Prevents GPU bottlenecks by auto-managing active inference nodes.
+Real-time VRAM/CPU monitoring with automated resource allocation and scaling
+Quantization and adaptive batching ensure LLaMA/LoRA models maintain peak efficiency
+Distributed inference system automatically manages active nodes to prevent bottlenecks
+Production-grade monitoring stack tracks system health and performance metrics
 
 ---
 
