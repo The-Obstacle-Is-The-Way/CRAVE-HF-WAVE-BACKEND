@@ -60,7 +60,7 @@ CRAVE-WAVE strives to be the world’s first self-optimizing craving intelligenc
 
 ## 🏗 Architecture & Batches  
 
-The project was developed with AI-acceleration/basecode abstraction through modular **batches**, breaking the development process into structured steps:  
+The project was developed with AI-acceleration & basecode abstraction through modular **batches**, breaking the development process into structured steps:  
 
 ### 🔹 Batch 1 – Initial Setup  
 📌 Clone the repository, install dependencies, and configure the environment.  
