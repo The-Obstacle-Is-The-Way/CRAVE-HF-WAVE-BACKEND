@@ -10,15 +10,17 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 # Install system dependencies:
+# - git: required for Hugging Face authentication
 # - gcc: for compiling packages
 # - ca-certificates: necessary for HTTPS connections (e.g., for Pinecone)
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
     gcc \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements.txt into the container and install Python dependencies
-COPY requirements.txt .
+COPY requirements.txt . 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
