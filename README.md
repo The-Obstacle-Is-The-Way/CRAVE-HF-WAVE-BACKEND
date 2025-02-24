@@ -26,7 +26,7 @@ Any behavioral insights should be viewed as informational only, and users should
 CRAVE-WAVE
 The world's first self-optimizing craving intelligence system—a backend powered by Vertical AI, ensuring that craving personas, retrieval strategies, and inference evolve dynamically as moat and user behavior shift.
 
-## 🚀 CRAVE AI - Finalized Tech Stack  
+## 🚀 CRAVE WAVE - Finalized Tech Stack  
 
 ### **1️⃣ Core Tech Stack**
 | **Component**            | **Technology**                                      | **Rationale**  |
@@ -41,25 +41,25 @@ The world's first self-optimizing craving intelligence system—a backend powere
 
 ---
 
-🧠 Intelligent Persona System
+🧠 **Intelligent Persona System**
 
-AI-powered LoRA hot-swapping ensures only relevant craving personas are active, with dynamic offloading of unused personas and continuous optimization based on real-world triggers
-Reinforcement Learning (RLHF) framework automatically refines persona deployment and selection strategies
-Custom attention mechanisms and adapter weights evolve based on user interaction patterns
+* AI-powered LoRA hot-swapping ensures only relevant craving personas are active, with dynamic offloading of unused personas and continuous optimization based on real-world triggers
+* Reinforcement Learning (RLHF) framework automatically refines persona deployment and selection strategies
+* Custom attention mechanisms and adapter weights evolve based on user interaction patterns
 
-🔍 Advanced Retrieval & Memory
+🔍 **Advanced Retrieval & Memory**
 
-Time-compressed RAG pipeline that prioritizes recent cravings while intelligently summarizing long-term patterns
-Dynamic retrieval scaling adjusts vector DB query depth and response relevance based on historical interactions
-Intelligent caching system creates compressed trend markers for cost-efficient, rapid retrieval
-Hybrid dense/sparse vector indexing for optimal context matching
+* Time-compressed RAG pipeline that prioritizes recent cravings while intelligently summarizing long-term patterns
+* Dynamic retrieval scaling adjusts vector DB query depth and response relevance based on historical interactions
+* Intelligent caching system creates compressed trend markers for cost-efficient, rapid retrieval
+* Hybrid dense/sparse vector indexing for optimal context matching
 
-⚡ Self-Optimizing Infrastructure
+⚡ **Self-Optimizing Infrastructure**
 
-Real-time VRAM/CPU monitoring with automated resource allocation and scaling
-Quantization and adaptive batching ensure LLaMA/LoRA models maintain peak efficiency
-Distributed inference system automatically manages active nodes to prevent bottlenecks
-Production-grade monitoring stack tracks system health and performance metrics
+* Real-time VRAM/CPU monitoring with automated resource allocation and scaling
+* Quantization and adaptive batching ensure LLaMA/LoRA models maintain peak efficiency
+* Distributed inference system automatically manages active nodes to prevent bottlenecks
+* Production-grade monitoring stack tracks system health and performance metrics
 
 ---
 
