@@ -315,89 +315,128 @@ jj@DESKTOP-L9V85UA:/mnt/c/Users/JJ/Desktop/CRAVE/crave_trinity_backend$ tree -I 
 ```
 ---
 
-## ⚡ Quick Start  
+### **⚡ Quick Start**
+#### ✅ **Prerequisites**  
+Before you begin, ensure you have the following installed:
 
-### ✅ Prerequisites  
+- 🐳 **Docker & Docker Compose** for containerized setup  
+- 🐍 **Python 3.11** (if running locally)  
+- 🤗 **Hugging Face CLI** (for private models & LoRA fine-tuning)  
 
-Before you begin, ensure you have the following installed:  
-
-- 🐳 Docker & Docker Compose for containerized setup  
-- 🐍 Python 3.11 (if running locally)  
-- 🤗 Hugging Face CLI (if using private models, run `huggingface-cli login`)  
-
-### 📥 Clone the Repository  
-
+#### 📥 **Clone the Repository**
 ```bash
-git clone git@github.com:The-Obstacle-Is-The-Way/crave-trinity-backend.git
+git clone https://github.com/Crave-Trinity/crave-trinity-backend.git
 cd crave-trinity-backend
 ```
 
-### 🔧 Configure Environment Variables  
+#### 🔧 **Configure Environment Variables**  
+Create a `.env` file in the project root with the necessary credentials:
 
-Create a `.env` file in the project root with the necessary credentials:  
-
-```env
+```ini
 SQLALCHEMY_DATABASE_URI=postgresql://postgres:password@db:5432/crave_db
 PINECONE_API_KEY=your_pinecone_api_key_here
 PINECONE_ENV=us-east-1-aws
 PINECONE_INDEX_NAME=crave-embeddings
 OPENAI_API_KEY=your_openai_api_key_here
 ```
+---
 
-### 🏗 Build & Run with Docker Compose  
+Got it! Here’s the **corrected version** with the proper GitHub repository URL:
 
+---
+
+### **⚡ Quick Start**
+#### ✅ **Prerequisites**  
+Before you begin, ensure you have the following installed:
+
+- 🐳 **Docker & Docker Compose** for containerized setup  
+- 🐍 **Python 3.11** (if running locally)  
+- 🤗 **Hugging Face CLI** (for private models & LoRA fine-tuning)  
+
+#### 📥 **Clone the Repository**
+```bash
+git clone https://github.com/Crave-Trinity/crave-trinity-backend.git
+cd crave-trinity-backend
+```
+
+#### 🔧 **Configure Environment Variables**  
+Create a `.env` file in the project root with the necessary credentials:
+
+```ini
+SQLALCHEMY_DATABASE_URI=postgresql://postgres:password@db:5432/crave_db
+PINECONE_API_KEY=your_pinecone_api_key_here
+PINECONE_ENV=us-east-1-aws
+PINECONE_INDEX_NAME=crave-embeddings
+OPENAI_API_KEY=your_openai_api_key_here
+```
+---
+
+### 🤗 **Set Up Hugging Face Authentication (Required for LoRA & Llama 2)**
+1️⃣ **Log in to Hugging Face inside the container:**
+```bash
+docker exec -it crave_trinity_backend-fast-api-1 bash
+huggingface-cli login
+```
+When prompted, **paste your Hugging Face access token** (get it from https://huggingface.co/settings/tokens).
+
+2️⃣ **Enable Git credential storage (to avoid re-authenticating):**
+```bash
+git config --global credential.helper store
+```
+
+3️⃣ **Verify authentication:**
+```bash
+huggingface-cli whoami
+```
+✅ **If you see your username and "Token valid (permission: write)," you're good to go!** 🚀
+
+---
+
+### 🏗 **Build & Run with Docker Compose**
 ```bash
 docker-compose up --build
 ```
-
 This will:  
 ✅ Build the FastAPI backend container  
 ✅ Start the PostgreSQL database  
 ✅ Expose ports 8000 (API) & 5432 (Database)  
 
-### 🔄 Run Database Migrations  
+---
 
+### 🔄 **Run Database Migrations**
 Inside the container (or locally, if configured):  
-
 ```bash
 alembic upgrade head
 ```
-
-This ensures the database schema is up to date.  
+This ensures the database schema is up to date.
 
 ---
 
-## 🧪 Testing the Application  
-
-### 🔬 API Endpoints  
-
-Once running, test the craving logging API with:  
-
+### 🧪 **Testing the Application**
+#### 🔬 **API Endpoints**
+Once running, test the craving logging API:
 ```bash
 curl -X POST -H "Content-Type: application/json" \
 -d '{"user_id":1, "description":"Chocolate craving", "intensity":8}' \
 http://localhost:8000/cravings
 ```
 
-### 📡 Pinecone Integration  
-
-Inside the FastAPI container, verify the Pinecone index:  
-
+#### 📡 **Pinecone Integration**
+Inside the FastAPI container, verify the Pinecone index:
 ```bash
 docker exec -it crave_trinity_backend-fast-api-1 python -c \
 "from app.infrastructure.vector_db.pinecone_client import init_pinecone; \
 init_pinecone(); import pinecone; print('List of indexes:', pinecone.list_indexes())"
 ```
+✅ Ensure `crave-embeddings` exists and is ready for use.
 
-Ensure `crave-embeddings` exists and is ready for use.  
+---
 
-### 🤖 Run Llama 2 with LoRA Inference (Batch 4)  
-
+### 🤖 **Run Llama 2 with LoRA Inference (Batch 4)**
 ```bash
 docker exec -it crave_trinity_backend-fast-api-1 python app/models/llama2_model.py
 ```
-
-This loads Llama 2 + LoRA adapters and runs a test inference prompt.  
+✅ This loads **Llama 2 + LoRA adapters** and runs a test inference prompt.
 
 ---
 
