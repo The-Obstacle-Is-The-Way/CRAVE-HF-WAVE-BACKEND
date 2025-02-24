@@ -97,7 +97,7 @@ jj@DESKTOP-L9V85UA:/mnt/c/Users/JJ/Desktop/CRAVE/crave_trinity_backend$ tree -I 
 #                                                                              
 #   - Anthony Bourdain                                                         
 #                                                                              
-#   CRAVE: Because understanding our cravings shouldn't be complicated 🍫
+#   CRAVE: Because understanding your cravings shouldn't be complicated 🍫
 #                                                                              
 ################################################################################
 #
