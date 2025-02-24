@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     # OpenAI API key for text embeddings.
     OPENAI_API_KEY: str
 
+    # ✅ Hugging Face API Key (previously missing)
+    HUGGINGFACE_API_KEY: str
+
     # Llama 2 model configuration:
     # - The model name is the Hugging Face identifier for the base Llama 2 model.
     LLAMA2_MODEL_NAME: str = "meta-llama/Llama-2-13b-chat-hf"
@@ -41,6 +44,7 @@ class Settings(BaseSettings):
     class Config:
         # Load environment variables from a .env file in the project root.
         env_file = ".env"
+        extra = "allow"  # ✅ Allows extra fields without throwing an error
 
 if __name__ == "__main__":
     # Debugging: print out all settings to verify they're loaded correctly.
