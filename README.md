@@ -64,23 +64,23 @@ The project was developed with AI-acceleration & basecode abstraction through mo
 
 ### 🔹 Batch 1 – Initial Setup  
 📌 Clone the repository, install dependencies, and configure the environment.  
-🔧 Initialize **PostgreSQL** and apply **Alembic** database migrations.  
-📂 **Key files:** `.env`, `requirements.txt`, `alembic.ini`  
+🔧 Initialize PostgreSQL and apply Alembic database migrations.  
+📂 Key files: `.env`, `requirements.txt`, `alembic.ini`  
 
 ### 🔹 Batch 2 – Backend & Database Integration  
-🛠 Develop **FastAPI** REST endpoints following **clean architecture**.  
-📊 Implement **database models, repositories, and use-case layers** for craving tracking.  
-📂 **Key files:** `app/api/`, `app/core/`, `app/infrastructure/database/`  
+🛠 Develop FastAPI REST endpoints following clean architecture.  
+📊 Implement database models, repositories, and use-case layers for craving tracking.  
+📂 Key files: `app/api/`, `app/core/`, `app/infrastructure/database/`  
 
 ### 🔹 Batch 3 – External Services Integration  
-📡 Connect to **Pinecone** for **vector storage & retrieval**.  
-🤖 Integrate **OpenAI embeddings** for craving analysis.  
-📂 **Key files:** `app/infrastructure/vector_db/`, `app/infrastructure/external/openai_embedding.py`  
+📡 Connect to Pinecone for vector storage & retrieval.  
+🤖 Integrate OpenAI embeddings for craving analysis.  
+📂 Key files: `app/infrastructure/vector_db/`, `app/infrastructure/external/openai_embedding.py`  
 
 ### 🔹 Batch 4 – Llama 2 with LoRA Integration  
-🦙 Load and fine-tune **Llama 2** using **LoRA adapters**.  
-🔍 Deploy AI inference endpoints for **craving insights**.  
-📂 **Key files:** `app/models/llama2_model.py`, `app/infrastructure/llm/llama2_adapter.py`  
+🦙 Load and fine-tune Llama 2 using LoRA adapters.  
+🔍 Deploy AI inference endpoints for craving insights.  
+📂 Key files: `app/models/llama2_model.py`, `app/infrastructure/llm/llama2_adapter.py`  
 
 ---
 
@@ -236,9 +236,9 @@ docker-compose up --build
 ```
 
 This will:  
-✅ Build the **FastAPI** backend container  
-✅ Start the **PostgreSQL** database  
-✅ Expose ports **8000** (API) & **5432** (Database)  
+✅ Build the FastAPI backend container  
+✅ Start the PostgreSQL database  
+✅ Expose ports 8000 (API) & 5432 (Database)  
 
 ### 🔄 Run Database Migrations  
 
@@ -248,7 +248,7 @@ Inside the container (or locally, if configured):
 alembic upgrade head
 ```
 
-This ensures the **database schema** is up to date.  
+This ensures the database schema is up to date.  
 
 ---
 
@@ -256,7 +256,7 @@ This ensures the **database schema** is up to date.
 
 ### 🔬 API Endpoints  
 
-Once running, test the **craving logging API** with:  
+Once running, test the craving logging API with:  
 
 ```bash
 curl -X POST -H "Content-Type: application/json" \
@@ -266,7 +266,7 @@ http://localhost:8000/cravings
 
 ### 📡 Pinecone Integration  
 
-Inside the **FastAPI** container, verify the Pinecone index:  
+Inside the FastAPI container, verify the Pinecone index:  
 
 ```bash
 docker exec -it crave_trinity_backend-fast-api-1 python -c \
@@ -282,23 +282,23 @@ Ensure `crave-embeddings` exists and is ready for use.
 docker exec -it crave_trinity_backend-fast-api-1 python app/models/llama2_model.py
 ```
 
-This loads **Llama 2 + LoRA adapters** and runs a **test inference prompt**.  
+This loads Llama 2 + LoRA adapters and runs a test inference prompt.  
 
 ---
 
 ## 🛠 Technical Details  
 
-- 🐳 **Dockerized Setup**  
+- 🐳 Dockerized Setup  
   - The backend is containerized with Python 3.11-slim for efficiency.  
 
-- 🛢 **Database**  
-  - Uses **PostgreSQL**, managed via **Alembic** migrations.  
+- 🛢 Database
+  - Uses PostgreSQL, managed via Alembic migrations.  
 
-- 📡 **External Services**  
-  - **Pinecone** for vector storage & retrieval.  
-  - **OpenAI** for text embeddings and craving analysis.  
+- 📡 External Services 
+  - Pinecone for vector storage & retrieval.  
+  - OpenAI for text embeddings and craving analysis.  
 
-- 🤖 **AI Model (Batch 4)**  
+- 🤖 AI Model (Batch 4) 
   - Llama 2 runs via Hugging Face Transformers.  
   - LoRA adapters fine-tune AI insights with PEFT.  
 
@@ -306,10 +306,10 @@ This loads **Llama 2 + LoRA adapters** and runs a **test inference prompt**.
 
 ## 🛣 Roadmap & Future Enhancements  
 
-🔜 **Batch 5** – Analytics dashboard & craving trend visualization  
-📊 **Batch 6** – Performance optimizations (GPU inference, rate limiting)  
-🔒 **Security Enhancements** – OAuth, data anonymization, and logging improvements  
-🚀 **Scaling** – Kubernetes deployment (`infra/k8s`)  
+🔜 Batch 5 – Analytics dashboard & craving trend visualization  
+📊 Batch 6 – Performance optimizations (GPU inference, rate limiting)  
+🔒 Security Enhancements – OAuth, data anonymization, and logging improvements  
+🚀 Scaling – Kubernetes deployment (`infra/k8s`)  
 
 ---
 
