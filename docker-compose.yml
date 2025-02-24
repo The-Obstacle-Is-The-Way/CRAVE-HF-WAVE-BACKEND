@@ -9,17 +9,23 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:  # ✅ Add this to ensure FastAPI waits for the database to be ready
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      retries: 5
+      start_period: 10s
 
   fast-api:
     build: .
     depends_on:
-      - db
+      db:
+        condition: service_healthy  # ✅ This ensures FastAPI only starts when PostgreSQL is ready
     ports:
       - "8000:8000"
     env_file:
       - .env  # ✅ This ensures FastAPI loads all API keys
     volumes:
-      - .:/app  # Optional: to sync code changes for local dev
+      - .:/app  # ✅ Allows local file syncing for development
 
 volumes:
   pgdata:
