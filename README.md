@@ -84,119 +84,6 @@ The project was developed with AI-acceleration/basecode abstraction through modu
 
 ---
 
-## ⚡ Quick Start  
-
-### ✅ Prerequisites  
-
-Before you begin, ensure you have the following installed:  
-
-- 🐳 **Docker & Docker Compose** for containerized setup  
-- 🐍 **Python 3.11** (if running locally)  
-- 🤗 **Hugging Face CLI** (if using private models, run `huggingface-cli login`)  
-
-### 📥 Clone the Repository  
-
-```bash
-git clone git@github.com:The-Obstacle-Is-The-Way/crave-trinity-backend.git
-cd crave-trinity-backend
-```
-
-### 🔧 Configure Environment Variables  
-
-Create a `.env` file in the project root with the necessary credentials:  
-
-```env
-SQLALCHEMY_DATABASE_URI=postgresql://postgres:password@db:5432/crave_db
-PINECONE_API_KEY=your_pinecone_api_key_here
-PINECONE_ENV=us-east-1-aws
-PINECONE_INDEX_NAME=crave-embeddings
-OPENAI_API_KEY=your_openai_api_key_here
-```
-
-### 🏗 Build & Run with Docker Compose  
-
-```bash
-docker-compose up --build
-```
-
-This will:  
-✅ Build the **FastAPI** backend container  
-✅ Start the **PostgreSQL** database  
-✅ Expose ports **8000** (API) & **5432** (Database)  
-
-### 🔄 Run Database Migrations  
-
-Inside the container (or locally, if configured):  
-
-```bash
-alembic upgrade head
-```
-
-This ensures the **database schema** is up to date.  
-
----
-
-## 🧪 Testing the Application  
-
-### 🔬 API Endpoints  
-
-Once running, test the **craving logging API** with:  
-
-```bash
-curl -X POST -H "Content-Type: application/json" \
--d '{"user_id":1, "description":"Chocolate craving", "intensity":8}' \
-http://localhost:8000/cravings
-```
-
-### 📡 Pinecone Integration  
-
-Inside the **FastAPI** container, verify the Pinecone index:  
-
-```bash
-docker exec -it crave_trinity_backend-fast-api-1 python -c \
-"from app.infrastructure.vector_db.pinecone_client import init_pinecone; \
-init_pinecone(); import pinecone; print('List of indexes:', pinecone.list_indexes())"
-```
-
-Ensure `crave-embeddings` exists and is ready for use.  
-
-### 🤖 Run Llama 2 with LoRA Inference (Batch 4)  
-
-```bash
-docker exec -it crave_trinity_backend-fast-api-1 python app/models/llama2_model.py
-```
-
-This loads **Llama 2 + LoRA adapters** and runs a **test inference prompt**.  
-
----
-
-## 🛠 Technical Details  
-
-- 🐳 **Dockerized Setup**  
-  - The backend is containerized with **Python 3.11-slim** for efficiency.  
-
-- 🛢 **Database**  
-  - Uses **PostgreSQL**, managed via **Alembic** migrations.  
-
-- 📡 **External Services**  
-  - **Pinecone** for **vector storage & retrieval**.  
-  - **OpenAI** for **text embeddings** and craving analysis.  
-
-- 🤖 **AI Model (Batch 4)**  
-  - **Llama 2** runs via **Hugging Face Transformers**.  
-  - **LoRA adapters** fine-tune AI insights with **PEFT**.  
-
----
-
-## 🛣 Roadmap & Future Enhancements  
-
-🔜 **Batch 5** – Analytics dashboard & craving trend visualization  
-📊 **Batch 6** – Performance optimizations (GPU inference, rate limiting)  
-🔒 **Security Enhancements** – OAuth, data anonymization, and logging improvements  
-🚀 **Scaling** – Kubernetes deployment (`infra/k8s`)  
-
----
-
 ## 📂 File Structure  
 
 ```plaintext
@@ -311,6 +198,119 @@ jj@DESKTOP-L9V85UA:/mnt/c/Users/JJ/Desktop/CRAVE/crave_trinity_backend$ tree -I 
 
 30 directories, 62 files
 ```
+---
+
+## ⚡ Quick Start  
+
+### ✅ Prerequisites  
+
+Before you begin, ensure you have the following installed:  
+
+- 🐳 **Docker & Docker Compose** for containerized setup  
+- 🐍 **Python 3.11** (if running locally)  
+- 🤗 **Hugging Face CLI** (if using private models, run `huggingface-cli login`)  
+
+### 📥 Clone the Repository  
+
+```bash
+git clone git@github.com:The-Obstacle-Is-The-Way/crave-trinity-backend.git
+cd crave-trinity-backend
+```
+
+### 🔧 Configure Environment Variables  
+
+Create a `.env` file in the project root with the necessary credentials:  
+
+```env
+SQLALCHEMY_DATABASE_URI=postgresql://postgres:password@db:5432/crave_db
+PINECONE_API_KEY=your_pinecone_api_key_here
+PINECONE_ENV=us-east-1-aws
+PINECONE_INDEX_NAME=crave-embeddings
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+### 🏗 Build & Run with Docker Compose  
+
+```bash
+docker-compose up --build
+```
+
+This will:  
+✅ Build the **FastAPI** backend container  
+✅ Start the **PostgreSQL** database  
+✅ Expose ports **8000** (API) & **5432** (Database)  
+
+### 🔄 Run Database Migrations  
+
+Inside the container (or locally, if configured):  
+
+```bash
+alembic upgrade head
+```
+
+This ensures the **database schema** is up to date.  
+
+---
+
+## 🧪 Testing the Application  
+
+### 🔬 API Endpoints  
+
+Once running, test the **craving logging API** with:  
+
+```bash
+curl -X POST -H "Content-Type: application/json" \
+-d '{"user_id":1, "description":"Chocolate craving", "intensity":8}' \
+http://localhost:8000/cravings
+```
+
+### 📡 Pinecone Integration  
+
+Inside the **FastAPI** container, verify the Pinecone index:  
+
+```bash
+docker exec -it crave_trinity_backend-fast-api-1 python -c \
+"from app.infrastructure.vector_db.pinecone_client import init_pinecone; \
+init_pinecone(); import pinecone; print('List of indexes:', pinecone.list_indexes())"
+```
+
+Ensure `crave-embeddings` exists and is ready for use.  
+
+### 🤖 Run Llama 2 with LoRA Inference (Batch 4)  
+
+```bash
+docker exec -it crave_trinity_backend-fast-api-1 python app/models/llama2_model.py
+```
+
+This loads **Llama 2 + LoRA adapters** and runs a **test inference prompt**.  
+
+---
+
+## 🛠 Technical Details  
+
+- 🐳 **Dockerized Setup**  
+  - The backend is containerized with **Python 3.11-slim** for efficiency.  
+
+- 🛢 **Database**  
+  - Uses **PostgreSQL**, managed via **Alembic** migrations.  
+
+- 📡 **External Services**  
+  - **Pinecone** for **vector storage & retrieval**.  
+  - **OpenAI** for **text embeddings** and craving analysis.  
+
+- 🤖 **AI Model (Batch 4)**  
+  - **Llama 2** runs via **Hugging Face Transformers**.  
+  - **LoRA adapters** fine-tune AI insights with **PEFT**.  
+
+---
+
+## 🛣 Roadmap & Future Enhancements  
+
+🔜 **Batch 5** – Analytics dashboard & craving trend visualization  
+📊 **Batch 6** – Performance optimizations (GPU inference, rate limiting)  
+🔒 **Security Enhancements** – OAuth, data anonymization, and logging improvements  
+🚀 **Scaling** – Kubernetes deployment (`infra/k8s`)  
+
 ---
 
 🌍 Why This Changes Everything
