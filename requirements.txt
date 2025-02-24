@@ -5,7 +5,7 @@ pydantic-settings==2.2.1
 pytest==7.3.1
 requests==2.31.0
 SQLAlchemy==2.0.17
-psycopg2-binary==2.9.7
+psycopg2-binary==2.9.10
 pinecone>=3.0.0
 protobuf>=4.21.0
 grpcio>=1.44.0
