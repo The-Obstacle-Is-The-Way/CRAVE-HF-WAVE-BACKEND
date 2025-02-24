@@ -26,6 +26,21 @@ Any behavioral insights should be viewed as informational only, and users should
 CRAVE-WAVE
 The world's first self-optimizing craving intelligence system—a backend powered by Vertical AI, ensuring that craving personas, retrieval strategies, and inference evolve dynamically as moat and user behavior shift.
 
+## 🚀 CRAVE AI - Finalized Tech Stack  
+
+### **1️⃣ Core Tech Stack**
+| **Component**            | **Technology**                                      | **Rationale**  |
+|-------------------------|--------------------------------------------------|---------------|
+| **LLM Model**           | **Llama 2 (13B) on AWS**                         | Best open-source model that supports LoRA fine-tuning. Not restricted like GPT-4. |
+| **Vector Database**      | **Pinecone**                                     | Production-grade, built for high-performance retrieval at scale. |
+| **Embeddings**          | **OpenAI `text-embedding-ada-002`**               | Best semantic search embeddings for RAG. |
+| **Fine-Tuning Framework** | **LoRA (Low-Rank Adaptation) via PyTorch + Hugging Face `peft`** | Allows persona-level fine-tuning without massive compute costs. |
+| **RAG Pipeline**        | **LangChain**                                    | Provides high-level abstractions for orchestrating retrieval, prompt assembly, and response generation. |
+| **Backend & Deployment** | **Python (FastAPI) on AWS EC2/ECS**              | Python for ML, FastAPI for async speed, AWS for scalability. |
+| **Structured Database**  | **PostgreSQL (AWS RDS)**                        | Stores craving logs, user metadata, and structured behavioral data for analytics & AI modeling. |
+
+---
+
 🧠 Intelligent Persona System
 
 AI-powered LoRA hot-swapping ensures only relevant craving personas are active, with dynamic offloading of unused personas and continuous optimization based on real-world triggers
@@ -45,6 +60,41 @@ Real-time VRAM/CPU monitoring with automated resource allocation and scaling
 Quantization and adaptive batching ensure LLaMA/LoRA models maintain peak efficiency
 Distributed inference system automatically manages active nodes to prevent bottlenecks
 Production-grade monitoring stack tracks system health and performance metrics
+
+---
+
+## 🚀 How It Works – End-to-End
+### 1️⃣ Craving Data Ingestion
+- Apple Watch + iPhone send craving logs (timestamp, HRV, location, user mood, notes).  
+- Stored in two places:
+  - PostgreSQL (structured metadata like timestamps).  
+  - Pinecone (embedded craving logs for retrieval).  
+
+---
+
+### 2️⃣ RAG Personalization – How AI Feels Personal Without Full Fine-Tuning 
+🔹 **Process:**  
+1. User Query: (“Why do I crave sugar at night?”)  
+2. Backend Embeds Query: Uses `text-embedding-ada-002`.  
+3. Retrieves Relevant Logs: Pinecone finds most relevant past craving logs.  
+4. Compiles Personalized Context: LangChain assembles user history + question into a structured prompt.  
+5. LLM Generates a Response: Feeds the retrieved logs + user’s question to Llama 2.  
+
+✅ Ensures that AI responses feel personalized, without training a separate model per user.  
+
+---
+
+### 3️⃣ LoRA Fine-Tuning – Craving Archetypes for Deeper Personalization
+🔹 **Why We Need This:**  
+- RAG personalizes via past data, but doesn’t change how the AI "thinks." 
+- LoRA lets us create craving-specific personas for better contextualization. 
+
+🔹 **How It Works:**  
+1. Users are categorized into craving personas (e.g., “Nighttime Binger,” “Stress Craver,” “Alcohol Dopamine-Seeker”).  
+2. Each persona has a lightweight LoRA adapter fine-tuned on past craving data.  
+3. During inference, we dynamically load the relevant LoRA adapter onto Llama 2.  
+4. Final Response = RAG Retrieved Context + LoRA Fine-Tuned Persona + User Query.
+*  ✅  This provides "adaptive" AI insights without massive per-user fine-tuning costs.
 
 ---
 
@@ -114,6 +164,13 @@ If GPU becomes a bottleneck, scale horizontally by adding more instances.
 * ✅ Python + FastAPI = Fast iteration speed & flexibility.
 * ✅ The architecture is built to scale, adapt, and improve.
 
+---
+
+## 🚀 Next Steps  
+* 💥 1️⃣ Find a visionary technical co-founder
+* 💥 2️⃣ Start implementing this frontend/backend architecture  
+* 💥 3️⃣ Ship, Talk to Users, Iterate
+ 
 ---
 
 ## 🏗 Architecture & Batches  
