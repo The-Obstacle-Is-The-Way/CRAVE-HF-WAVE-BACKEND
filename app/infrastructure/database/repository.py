@@ -73,9 +73,6 @@ class CravingRepository:
         """
         Retrieve all cravings associated with a specific user, with optional pagination.
         
-        This method queries the database for all cravings linked to the given user_id,
-        applies pagination parameters, converts each record into a domain object, and returns a list.
-        
         :param user_id: The unique ID of the user.
         :param skip: Number of records to skip (default is 0).
         :param limit: Maximum number of records to return (default is 100).
@@ -107,6 +104,33 @@ class CravingRepository:
         :return: An integer count of cravings.
         """
         return self.db.query(CravingModel).filter(CravingModel.user_id == user_id).count()
+
+    def search_cravings(self, query: str, skip: int = 0, limit: int = 100):
+        """
+        Search cravings by a query string in their descriptions, with optional pagination.
+        
+        :param query: A string to search for within craving descriptions.
+        :param skip: Number of records to skip (default is 0).
+        :param limit: Maximum number of records to return (default is 100).
+        :return: A list of Craving domain objects that match the search query.
+        """
+        models = (
+            self.db.query(CravingModel)
+            .filter(CravingModel.description.ilike(f"%{query}%"))
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+        return [
+            Craving(
+                id=model.id,
+                user_id=model.user_id,
+                description=model.description,
+                intensity=model.intensity,
+                created_at=model.created_at,
+            )
+            for model in models
+        ]
 
 
 class UserRepository:

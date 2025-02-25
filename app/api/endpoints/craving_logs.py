@@ -1,10 +1,17 @@
-# crave_trinity_backend/app/api/endpoints/craving_logs.py
+"""
+File: crave_trinity-backend/app/api/endpoints/craving_logs.py
+Description: This module defines the API endpoints for handling cravings, including creation, listing,
+retrieval by ID, and semantic search functionalities. It follows clean code practices and integrates with
+the repository and use-case layers for data processing.
+"""
+
 from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from pydantic import BaseModel, Field, validator
 from sqlalchemy.orm import Session
 
+# Import dependencies and use cases
 from app.api.dependencies import get_db
 from app.core.use_cases.ingest_craving import IngestCravingInput, ingest_craving
 from app.core.use_cases.search_cravings import SearchCravingsInput, search_cravings
@@ -12,9 +19,14 @@ from app.infrastructure.database.repository import CravingRepository
 
 router = APIRouter()
 
+# =============================================================================
 # Request/Response Models
+# =============================================================================
+
 class CreateCravingRequest(BaseModel):
-    """Request model for creating a new craving entry."""
+    """
+    Request model for creating a new craving entry.
+    """
     user_id: int = Field(..., example=1, description="The user ID logging the craving")
     description: str = Field(..., example="Sudden urge for chocolate", description="Description of the craving")
     intensity: int = Field(..., ge=1, le=10, example=7, description="Intensity on a scale of 1-10")
@@ -26,7 +38,9 @@ class CreateCravingRequest(BaseModel):
         return v
 
 class CravingResponse(BaseModel):
-    """Response model for craving data."""
+    """
+    Response model for individual craving data.
+    """
     id: int = Field(..., description="The unique identifier of the craving")
     user_id: int = Field(..., description="The user who logged the craving")
     description: str = Field(..., description="Description of the craving")
@@ -34,12 +48,16 @@ class CravingResponse(BaseModel):
     created_at: datetime = Field(..., description="Timestamp when the craving was created")
     
 class CravingListResponse(BaseModel):
-    """Response model for a list of cravings."""
+    """
+    Response model for a list of cravings.
+    """
     cravings: List[CravingResponse]
     count: int = Field(..., description="Total number of cravings")
 
 class SearchResult(BaseModel):
-    """Model for a single search result."""
+    """
+    Model for a single search result.
+    """
     id: int
     description: str
     intensity: int
@@ -47,23 +65,26 @@ class SearchResult(BaseModel):
     similarity: float = Field(..., description="Similarity score to the query")
 
 class SearchResponse(BaseModel):
-    """Response model for search results."""
+    """
+    Response model for search results.
+    """
     results: List[SearchResult]
     query: str
     count: int
 
-# Endpoints
+# =============================================================================
+# API Endpoints
+# =============================================================================
+
 @router.post("/cravings", response_model=CravingResponse, tags=["Cravings"])
 async def create_craving(request: CreateCravingRequest, db: Session = Depends(get_db)):
     """
     Create a new craving entry.
     
-    This endpoint logs a user's craving with its description and intensity.
-    The craving is stored in the database and will be available for later
-    analysis and AI insights.
+    Logs a user's craving (description and intensity) to the database.
     
     Returns:
-        CravingResponse: The created craving with its ID and timestamp
+        CravingResponse: The created craving, including its ID and timestamp.
     """
     try:
         repo = CravingRepository(db)
@@ -85,12 +106,12 @@ async def list_cravings(
     db: Session = Depends(get_db)
 ):
     """
-    List cravings for a specific user.
+    List cravings for a specific user with pagination.
     
-    This endpoint retrieves a paginated list of cravings for the specified user.
+    Retrieves a paginated list of cravings for the provided user ID.
     
     Returns:
-        CravingListResponse: A list of cravings and the total count
+        CravingListResponse: A list of cravings along with the total count.
     """
     try:
         repo = CravingRepository(db)
@@ -109,12 +130,12 @@ async def get_craving(
     db: Session = Depends(get_db)
 ):
     """
-    Get a specific craving by ID.
+    Retrieve a specific craving by its ID.
     
-    This endpoint retrieves detailed information about a single craving.
+    Returns detailed information about a single craving.
     
     Returns:
-        CravingResponse: The craving details
+        CravingResponse: The craving details.
     """
     try:
         repo = CravingRepository(db)
@@ -136,11 +157,11 @@ async def search_cravings_endpoint(
     """
     Search for cravings using semantic similarity.
     
-    This endpoint uses vector embeddings to find cravings similar to the query text.
-    It powers the RAG (Retrieval-Augmented Generation) component of the CRAVE system.
+    Leverages vector embeddings to find cravings similar to the provided query text.
+    This powers the RAG (Retrieval-Augmented Generation) component of the system.
     
     Returns:
-        SearchResponse: A list of similar cravings with their similarity scores
+        SearchResponse: A list of similar cravings with their similarity scores.
     """
     try:
         input_dto = SearchCravingsInput(
