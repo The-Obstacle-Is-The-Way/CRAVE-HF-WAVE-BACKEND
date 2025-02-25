@@ -61,13 +61,9 @@ The world's first self-optimizing craving intelligence system—a backend powere
 * Distributed inference system automatically manages active nodes to prevent bottlenecks
 * Production-grade monitoring stack tracks system health and performance metrics
 
----
-
 <div align="center">
   <img src="assets/images/vertical-ai-orchestrator.svg" alt="Vertical AI Orchestration System" width="800">
 </div>
-
----
 
 ## 🚀 How It Works – End-to-End
 ### 1️⃣ Craving Data Ingestion
