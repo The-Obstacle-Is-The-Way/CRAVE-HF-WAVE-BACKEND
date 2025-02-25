@@ -63,6 +63,12 @@ The world's first self-optimizing craving intelligence system—a backend powere
 
 ---
 
+<div align="center">
+  <img src="assets/images/vertical-ai-orchestrator.svg" alt="Vertical AI Orchestration System" width="800">
+</div>
+
+---
+
 ## 🚀 How It Works – End-to-End
 ### 1️⃣ Craving Data Ingestion
 - Apple Watch + iPhone send craving logs (timestamp, HRV, location, user mood, notes).  
