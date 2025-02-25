@@ -10,7 +10,6 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 
-
 # revision identifiers, used by Alembic.
 revision: str = '09c26554662a'
 down_revision: Union[str, None] = '200c7d532370'
@@ -20,7 +19,6 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     # Add the is_deleted column to the cravings table.
-    # The column is a Boolean, defaults to False, and is not nullable.
     op.add_column('cravings', sa.Column('is_deleted', sa.Boolean(), server_default='false', nullable=False))
 
 
