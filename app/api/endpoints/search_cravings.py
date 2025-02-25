@@ -4,14 +4,15 @@ app/api/endpoints/search_cravings.py
 This module implements the search endpoint for the CRAVE Trinity Backend.
 
 It exposes a GET route at /api/cravings/search which:
-  • Accepts a query parameter.
+  • Accepts query parameters: user_id and query text.
   • Uses the CravingRepository to search for matching cravings.
   • Converts the ORM objects into Pydantic models for a consistent response.
 """
 
 from fastapi import APIRouter, HTTPException, Depends, Query
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
+from datetime import datetime
 from app.api.dependencies import get_db, get_craving_repository
 
 # Define a Pydantic model for outputting a craving record.
@@ -20,10 +21,10 @@ class CravingOut(BaseModel):
     user_id: int = Field(..., description="User ID associated with the craving")
     description: str = Field(..., description="Text description of the craving")
     intensity: int = Field(..., description="Intensity rating of the craving")
-    created_at: str = Field(..., description="Timestamp when the craving was logged")
+    created_at: datetime = Field(..., description="Timestamp when the craving was logged")
 
     class Config:
-        from_attributes = True  # Pydantic v2: enable conversion from ORM objects
+        from_attributes = True  # Pydantic v2 setting for ORM compatibility
 
 # Define the response model for a search request.
 class SearchResponse(BaseModel):
@@ -35,6 +36,7 @@ router = APIRouter()
 
 @router.get("/search", response_model=SearchResponse, tags=["Cravings"])
 def search_cravings_endpoint(
+    user_id: int = Query(..., description="User ID for search context"),
     query: str = Query(..., description="Search query text"),
     db = Depends(get_db)
 ):
