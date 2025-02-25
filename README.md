@@ -62,7 +62,7 @@ The world's first self-optimizing craving intelligence system—a backend powere
 * Production-grade monitoring stack tracks system health and performance metrics
 
 <div align="center">
-  <img src="assets/images/vertical-ai-orchestrator.svg" alt="Vertical AI Orchestration System" width="800">
+  <img src="assets/images/vertical-ai-orchestrator-fixed.svg" alt="Vertical AI Orchestration System" width="800">
 </div>
 
 ## 🚀 How It Works – End-to-End
