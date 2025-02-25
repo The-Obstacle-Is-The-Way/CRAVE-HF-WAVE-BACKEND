@@ -2,14 +2,20 @@
 """
 Vector repository for handling Pinecone-based retrieval operations.
 Optimized for fast, reliable search of craving embeddings.
+This file now correctly instantiates the Settings class from app/config/settings.py
+to access PINECONE_INDEX_NAME.
 """
+
 import pinecone
-from app.config.settings import PINECONE_INDEX_NAME  # Ensure your settings include your index name
+from app.config.settings import Settings  # Import the Settings class
+
+# Instantiate the settings to access configuration values.
+settings = Settings()
 
 class VectorRepository:
     def __init__(self):
-        # Initialize the Pinecone index using the provided index name.
-        self.index = pinecone.Index(PINECONE_INDEX_NAME)
+        # Initialize the Pinecone index using the index name from settings.
+        self.index = pinecone.Index(settings.PINECONE_INDEX_NAME)
 
     def search_cravings(self, embedding: list[float], top_k: int = 10) -> dict:
         """
