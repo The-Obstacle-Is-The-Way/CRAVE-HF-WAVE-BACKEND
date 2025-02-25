@@ -1,23 +1,8 @@
+# File: app/api/main.py
 """
-Directory Structure (excerpt):
-app/
- └── api/
-     ├── main.py           <-- This file
-     ├── dependencies.py
-     └── endpoints/Patient reported upcoming spring break flight and requested Xanax. Informed pt cannot prescribe controlled substances on this platform, which pt retrial of hydroxyzine, pt agreeable as reported only needing for short-term flight anxiety during spring break trip. Pt also reported lower motivation/mood and difficulty getting out of bed related to motivation, expressed interest in retrialing Wellbutrin with Zoloft. Decided to add hydroxyzine and Vistaril to regimen for plane anxiety and general motivation/hedonic capacity. Pt reported significant anxiety. Otherwise, reported fair mood and denied anxiety problems. Denied problems with sleep, interest, guilt, worthlessnessd SI, HI, AVH. Denied concerns for mania.
-         ├── health.py
-         ├── user_queries.py
-         ├── craving_logs.py
-         ├── ai_endpoints.py
-         └── search_cravings.py
-...
-
-Description:
-This module creates the FastAPI application for the CRAVE Trinity Backend,
-registers all the endpoint routers, and defines startup events. The routers
-include health checks, user queries, craving logs, AI endpoints, and the search endpoint.
+This file creates the FastAPI application for the CRAVE Trinity Backend,
+registers all the endpoint routers, and defines startup events.
 """
-
 from fastapi import FastAPI
 
 # Import routers from the endpoints modules.
@@ -27,7 +12,6 @@ from app.api.endpoints.craving_logs import router as craving_logs_router
 from app.api.endpoints.ai_endpoints import router as ai_router
 from app.api.endpoints.search_cravings import router as search_router
 
-# Create the FastAPI app with metadata.
 app = FastAPI(
     title="CRAVE Trinity Backend",
     description="A modular, AI-powered backend for craving analytics",
@@ -36,7 +20,7 @@ app = FastAPI(
 
 # Register routers with appropriate URL prefixes.
 app.include_router(health_router, prefix="/api/health")
-app.include_router(user_queries_router, prefix="/api/cravings")
+app.include_router(user_queries_router, prefix="/api/cravings")  # Now endpoints are /api/cravings/{craving_id}
 app.include_router(craving_logs_router, prefix="/api/cravings")
 app.include_router(ai_router, prefix="/api")
 app.include_router(search_router, prefix="/api/cravings")
