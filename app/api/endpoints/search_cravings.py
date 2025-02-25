@@ -23,7 +23,7 @@ class CravingOut(BaseModel):
     created_at: str = Field(..., description="Timestamp when the craving was logged")
 
     class Config:
-        orm_mode = True  # Allows conversion from ORM objects
+        from_attributes = True  # Pydantic v2: enable conversion from ORM objects
 
 # Define the response model for a search request.
 class SearchResponse(BaseModel):
