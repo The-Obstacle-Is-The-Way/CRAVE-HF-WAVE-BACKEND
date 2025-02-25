@@ -1,0 +1,253 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700">
+  <!-- Background with tech gradient -->
+  <defs>
+    <radialGradient id="techBg" cx="50%" cy="50%" r="70%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#0A192F" />
+      <stop offset="100%" stop-color="#020713" />
+    </radialGradient>
+    
+    <!-- Glowing effect for connections -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    
+    <!-- Neural network pattern -->
+    <pattern id="neuralPattern" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+      <circle cx="10" cy="10" r="1" fill="#4F8BFF" opacity="0.5" />
+      <circle cx="30" cy="30" r="1" fill="#4F8BFF" opacity="0.5" />
+      <circle cx="40" cy="10" r="1" fill="#4F8BFF" opacity="0.5" />
+    </pattern>
+  </defs>
+  
+  <!-- Main background -->
+  <rect width="100%" height="100%" fill="url(#techBg)" />
+  <rect width="100%" height="100%" fill="url(#neuralPattern)" opacity="0.2" />
+  
+  <!-- Central AI Core - The Orchestrator -->
+  <g id="aiCore">
+    <circle cx="450" cy="400" r="80" fill="#1D2951" stroke="#4F8BFF" stroke-width="3" />
+    <circle cx="450" cy="400" r="70" fill="none" stroke="#4F8BFF" stroke-width="1" opacity="0.7">
+      <animate attributeName="r" values="70;75;70" dur="4s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="450" cy="400" r="60" fill="none" stroke="#4F8BFF" stroke-width="1" opacity="0.5">
+      <animate attributeName="r" values="60;65;60" dur="3s" repeatCount="indefinite" />
+    </circle>
+    
+    <!-- AI Core inner details - restructured to ensure text is on top -->
+    <!-- Visual elements first (background) -->
+    <path d="M430,375 L470,375 L465,425 L435,425 Z" fill="#4F8BFF" opacity="0.9" />
+    <circle cx="450" cy="365" r="15" fill="#7F00FF" opacity="0.8" />
+    <!-- Text last (foreground) -->
+    <text x="450" y="405" font-family="Helvetica" font-size="11" fill="white" text-anchor="middle" font-weight="bold">VERTICAL AI</text>
+    <text x="450" y="420" font-family="Helvetica" font-size="9" fill="white" text-anchor="middle" font-weight="bold">ORCHESTRATOR</text>
+  </g>
+  
+  <!-- Front-end Cluster (Top Left) -->
+  <g id="frontend">
+    <circle cx="250" cy="200" r="60" fill="#1A3A64" stroke="#4FB0FF" stroke-width="1" />
+    <text x="250" y="190" font-family="Helvetica" font-size="14" fill="white" text-anchor="middle" font-weight="bold">CraveTrinity</text>
+    <text x="250" y="210" font-family="Helvetica" font-size="10" fill="#4FB0FF" text-anchor="middle">FRONTEND</text>
+    
+    <!-- Frontend components -->
+    <g font-family="Helvetica" font-size="9" fill="#BFE6FF">
+      <!-- Bubbles first (behind) -->
+      <circle cx="230" cy="160" r="8" fill="#1A3A64" stroke="#4FB0FF" stroke-width="0.5" />
+      <circle cx="270" cy="160" r="8" fill="#1A3A64" stroke="#4FB0FF" stroke-width="0.5" />
+      <circle cx="230" cy="230" r="8" fill="#1A3A64" stroke="#4FB0FF" stroke-width="0.5" />
+      <circle cx="270" cy="230" r="8" fill="#1A3A64" stroke="#4FB0FF" stroke-width="0.5" />
+      <!-- Text last (in front) -->
+      <text x="230" y="165" text-anchor="middle" font-weight="bold">SwiftUI</text>
+      <text x="270" y="165" text-anchor="middle" font-weight="bold">SwiftData</text>
+      <text x="230" y="235" text-anchor="middle" font-weight="bold">CoreML</text>
+      <text x="270" y="235" text-anchor="middle" font-weight="bold">HealthKit</text>
+    </g>
+  </g>
+  
+  <!-- Back-end Cluster (Top Right) -->
+  <g id="backend">
+    <circle cx="650" cy="200" r="60" fill="#2C1A64" stroke="#A54FFF" stroke-width="1" />
+    <text x="650" y="190" font-family="Helvetica" font-size="14" fill="white" text-anchor="middle" font-weight="bold">CraveWave</text>
+    <text x="650" y="210" font-family="Helvetica" font-size="10" fill="#A54FFF" text-anchor="middle">BACKEND</text>
+    
+    <!-- Backend components -->
+    <g font-family="Helvetica" font-size="9" fill="#E6BFFF">
+      <!-- Bubbles first (behind) -->
+      <circle cx="630" cy="160" r="8" fill="#2C1A64" stroke="#A54FFF" stroke-width="0.5" />
+      <circle cx="670" cy="160" r="8" fill="#2C1A64" stroke="#A54FFF" stroke-width="0.5" />
+      <circle cx="630" cy="230" r="8" fill="#2C1A64" stroke="#A54FFF" stroke-width="0.5" />
+      <circle cx="670" cy="230" r="8" fill="#2C1A64" stroke="#A54FFF" stroke-width="0.5" />
+      <!-- Text last (in front) -->
+      <text x="630" y="165" text-anchor="middle" font-weight="bold">FastAPI</text>
+      <text x="670" y="165" text-anchor="middle" font-weight="bold">Postgres</text>
+      <text x="630" y="235" text-anchor="middle" font-weight="bold">Pinecone</text>
+      <text x="670" y="235" text-anchor="middle" font-weight="bold">Redis</text>
+    </g>
+  </g>
+  
+  <!-- AI/ML Cluster (Bottom Left) -->
+  <g id="aiml">
+    <circle cx="250" cy="600" r="60" fill="#641A3A" stroke="#FF4F8B" stroke-width="1" />
+    <text x="250" y="590" font-family="Helvetica" font-size="14" fill="white" text-anchor="middle" font-weight="bold">AI/ML</text>
+    <text x="250" y="610" font-family="Helvetica" font-size="10" fill="#FF4F8B" text-anchor="middle">INFRASTRUCTURE</text>
+    
+    <!-- AI/ML components -->
+    <g font-family="Helvetica" font-size="9" fill="#FFBFE6">
+      <!-- Bubbles first (behind) -->
+      <circle cx="230" cy="560" r="8" fill="#641A3A" stroke="#FF4F8B" stroke-width="0.5" />
+      <circle cx="270" cy="560" r="8" fill="#641A3A" stroke="#FF4F8B" stroke-width="0.5" />
+      <circle cx="230" cy="630" r="8" fill="#641A3A" stroke="#FF4F8B" stroke-width="0.5" />
+      <circle cx="270" cy="630" r="8" fill="#641A3A" stroke="#FF4F8B" stroke-width="0.5" />
+      <!-- Text last (in front) -->
+      <text x="230" y="565" text-anchor="middle" font-weight="bold">Llama 2</text>
+      <text x="270" y="565" text-anchor="middle" font-weight="bold">Ada-002</text>
+      <text x="230" y="635" text-anchor="middle" font-weight="bold">LangChain</text>
+      <text x="270" y="635" text-anchor="middle" font-weight="bold">PEFT</text>
+    </g>
+  </g>
+  
+  <!-- DevOps Cluster (Bottom Right) -->
+  <g id="devops">
+    <circle cx="650" cy="600" r="60" fill="#641A1A" stroke="#FF4F4F" stroke-width="1" />
+    <text x="650" y="590" font-family="Helvetica" font-size="14" fill="white" text-anchor="middle" font-weight="bold">DEVOPS</text>
+    <text x="650" y="610" font-family="Helvetica" font-size="10" fill="#FF4F4F" text-anchor="middle">INFRASTRUCTURE</text>
+    
+    <!-- DevOps components -->
+    <g font-family="Helvetica" font-size="9" fill="#FFBFBF">
+      <!-- Bubbles first (behind) -->
+      <circle cx="630" cy="560" r="8" fill="#641A1A" stroke="#FF4F4F" stroke-width="0.5" />
+      <circle cx="670" cy="560" r="8" fill="#641A1A" stroke="#FF4F4F" stroke-width="0.5" />
+      <circle cx="630" cy="630" r="8" fill="#641A1A" stroke="#FF4F4F" stroke-width="0.5" />
+      <circle cx="670" cy="630" r="8" fill="#641A1A" stroke="#FF4F4F" stroke-width="0.5" />
+      <!-- Text last (in front) -->
+      <text x="630" y="565" text-anchor="middle" font-weight="bold">Docker</text>
+      <text x="670" y="565" text-anchor="middle" font-weight="bold">AWS</text>
+      <text x="630" y="635" text-anchor="middle" font-weight="bold">Alembic</text>
+      <text x="670" y="635" text-anchor="middle" font-weight="bold">pytest</text>
+    </g>
+  </g>
+  
+  <!-- Orchestrator Arms/Tentacles -->
+  <g id="orchestratorArms" filter="url(#glow)">
+    <!-- Frontend Arm -->
+    <path d="M425,340 Q350,300 300,240 Q270,220 250,200" fill="none" stroke="#4FB0FF" stroke-width="3" opacity="0.8">
+      <animate attributeName="d" values="M425,340 Q350,300 300,240 Q270,220 250,200;M425,340 Q340,290 290,230 Q265,215 250,200;M425,340 Q350,300 300,240 Q270,220 250,200" dur="7s" repeatCount="indefinite" />
+    </path>
+    
+    <!-- Backend Arm -->
+    <path d="M475,340 Q550,300 600,240 Q630,220 650,200" fill="none" stroke="#A54FFF" stroke-width="3" opacity="0.8">
+      <animate attributeName="d" values="M475,340 Q550,300 600,240 Q630,220 650,200;M475,340 Q560,290 610,230 Q635,215 650,200;M475,340 Q550,300 600,240 Q630,220 650,200" dur="6s" repeatCount="indefinite" />
+    </path>
+    
+    <!-- AI/ML Arm -->
+    <path d="M425,460 Q350,500 300,560 Q270,580 250,600" fill="none" stroke="#FF4F8B" stroke-width="3" opacity="0.8">
+      <animate attributeName="d" values="M425,460 Q350,500 300,560 Q270,580 250,600;M425,460 Q340,510 290,570 Q265,585 250,600;M425,460 Q350,500 300,560 Q270,580 250,600" dur="8s" repeatCount="indefinite" />
+    </path>
+    
+    <!-- DevOps Arm -->
+    <path d="M475,460 Q550,500 600,560 Q630,580 650,600" fill="none" stroke="#FF4F4F" stroke-width="3" opacity="0.8">
+      <animate attributeName="d" values="M475,460 Q550,500 600,560 Q630,580 650,600;M475,460 Q560,510 610,570 Q635,585 650,600;M475,460 Q550,500 600,560 Q630,580 650,600" dur="7.5s" repeatCount="indefinite" />
+    </path>
+  </g>
+  
+  <!-- Data flow visualizations -->
+  <g id="dataFlows">
+    <!-- Frontend to Core -->
+    <g>
+      <circle cx="320" cy="270" r="3" fill="#4FB0FF" opacity="0.9">
+        <animate attributeName="cx" values="250;320;450" dur="2s" repeatCount="indefinite" />
+        <animate attributeName="cy" values="200;270;400" dur="2s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="260" cy="235" r="3" fill="#4FB0FF" opacity="0.9">
+        <animate attributeName="cx" values="250;260;340;450" dur="2.5s" repeatCount="indefinite" />
+        <animate attributeName="cy" values="200;235;285;400" dur="2.5s" repeatCount="indefinite" />
+      </circle>
+    </g>
+    
+    <!-- Backend to Core -->
+    <g>
+      <circle cx="580" cy="270" r="3" fill="#A54FFF" opacity="0.9">
+        <animate attributeName="cx" values="650;580;450" dur="2.2s" repeatCount="indefinite" />
+        <animate attributeName="cy" values="200;270;400" dur="2.2s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="640" cy="235" r="3" fill="#A54FFF" opacity="0.9">
+        <animate attributeName="cx" values="650;640;560;450" dur="2.7s" repeatCount="indefinite" />
+        <animate attributeName="cy" values="200;235;285;400" dur="2.7s" repeatCount="indefinite" />
+      </circle>
+    </g>
+    
+    <!-- AI/ML to Core -->
+    <g>
+      <circle cx="320" cy="530" r="3" fill="#FF4F8B" opacity="0.9">
+        <animate attributeName="cx" values="250;320;450" dur="2.1s" repeatCount="indefinite" />
+        <animate attributeName="cy" values="600;530;400" dur="2.1s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="260" cy="565" r="3" fill="#FF4F8B" opacity="0.9">
+        <animate attributeName="cx" values="250;260;340;450" dur="2.6s" repeatCount="indefinite" />
+        <animate attributeName="cy" values="600;565;485;400" dur="2.6s" repeatCount="indefinite" />
+      </circle>
+    </g>
+    
+    <!-- DevOps to Core -->
+    <g>
+      <circle cx="580" cy="530" r="3" fill="#FF4F4F" opacity="0.9">
+        <animate attributeName="cx" values="650;580;450" dur="2.3s" repeatCount="indefinite" />
+        <animate attributeName="cy" values="600;530;400" dur="2.3s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="640" cy="565" r="3" fill="#FF4F4F" opacity="0.9">
+        <animate attributeName="cx" values="650;640;560;450" dur="2.8s" repeatCount="indefinite" />
+        <animate attributeName="cy" values="600;565;485;400" dur="2.8s" repeatCount="indefinite" />
+      </circle>
+    </g>
+  </g>
+  
+  <!-- Radar/Pulse effect from core -->
+  <circle cx="450" cy="400" r="5" fill="none" stroke="#7F00FF" stroke-width="1.5" opacity="0.8">
+    <animate attributeName="r" values="5;200;5" dur="6s" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0.8;0;0.8" dur="6s" repeatCount="indefinite" />
+  </circle>
+  
+  <!-- LoRA Adapter Ring -->
+  <circle cx="450" cy="400" r="95" fill="none" stroke="#B77FFF" stroke-width="1.5" stroke-dasharray="5,5" opacity="0.8">
+    <animateTransform attributeName="transform" type="rotate" from="0 450 400" to="360 450 400" dur="30s" repeatCount="indefinite" />
+  </circle>
+  <text x="450" y="325" font-family="Helvetica" font-size="10" fill="#B77FFF" text-anchor="middle" font-weight="bold">LoRA ADAPTERS</text>
+  
+  <!-- RAG System Visualization -->
+  <g id="ragSystem" opacity="0.7">
+    <path d="M390,340 Q370,320 380,300 Q390,280 370,260" fill="none" stroke="#4FFFBF" stroke-width="1" />
+    <path d="M510,340 Q530,320 520,300 Q510,280 530,260" fill="none" stroke="#4FFFBF" stroke-width="1" />
+    <text x="450" y="265" font-family="Helvetica" font-size="10" fill="#4FFFBF" text-anchor="middle" font-weight="bold">RAG PIPELINE</text>
+  </g>
+  
+  <!-- Clean Architecture Label -->
+  <g id="architectureLabel">
+    <text x="450" y="650" font-family="Helvetica" font-size="16" fill="white" text-anchor="middle" font-weight="bold">CLEAN ARCHITECTURE</text>
+    <text x="450" y="670" font-family="Helvetica" font-size="12" fill="#4F8BFF" text-anchor="middle">(SOLID + DoF)</text>
+    <path d="M300,680 L600,680" stroke="white" stroke-width="1" opacity="0.5" />
+  </g>
+  
+  <!-- Animated particles in the background -->
+  <g id="bgParticles">
+    <circle cx="150" cy="100" r="1" fill="white" opacity="0.6">
+      <animate attributeName="cx" values="150;170;150" dur="10s" repeatCount="indefinite" />
+      <animate attributeName="cy" values="100;120;100" dur="12s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="750" cy="120" r="1" fill="white" opacity="0.6">
+      <animate attributeName="cx" values="750;730;750" dur="11s" repeatCount="indefinite" />
+      <animate attributeName="cy" values="120;100;120" dur="9s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="150" cy="700" r="1" fill="white" opacity="0.6">
+      <animate attributeName="cx" values="150;170;150" dur="9s" repeatCount="indefinite" />
+      <animate attributeName="cy" values="700;680;700" dur="11s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="750" cy="680" r="1" fill="white" opacity="0.6">
+      <animate attributeName="cx" values="750;730;750" dur="12s" repeatCount="indefinite" />
+      <animate attributeName="cy" values="680;700;680" dur="10s" repeatCount="indefinite" />
+    </circle>
+  </g>
+  
+  <!-- Logo/Branding -->
+  <text x="450" y="50" font-family="Helvetica" font-size="26" fill="white" text-anchor="middle" font-weight="bold">VERTICAL AI ORCHESTRATION</text>
+  <text x="450" y="80" font-family="Helvetica" font-size="16" fill="#4F8BFF" text-anchor="middle">SELF-TUNING AGENT SYSTEM</text>
+</svg>
