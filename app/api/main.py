@@ -2,6 +2,10 @@
 from fastapi import FastAPI, APIRouter
 from app.api.endpoints import health, craving_logs, ai_endpoints
 from app.infrastructure.vector_db.pinecone_client import init_pinecone
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from app.config.settings import Settings
+from app.core.use_cases.initialize_database import initialize_database, seed_demo_users
 
 def create_app() -> FastAPI:
     """
@@ -42,9 +46,32 @@ def create_app() -> FastAPI:
     def startup_event():
         """
         Executes when the application starts.
-        Initializes external dependencies like Pinecone.
+        Initializes external dependencies and database.
         """
-        init_pinecone()
+        # Initialize Pinecone
+        try:
+            init_pinecone()
+        except Exception as e:
+            print(f"Warning: Pinecone initialization error: {e}")
+            
+        # Initialize database and seed users
+        try:
+            settings = Settings()
+            engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
+            initialize_database(engine)
+            
+            # Create a session and seed demo users
+            SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+            db = SessionLocal()
+            try:
+                seed_demo_users(db)
+            finally:
+                db.close()
+                
+            print("Database initialized successfully with demo users")
+        except Exception as e:
+            print(f"Warning: Database initialization error: {e}")
+            
         print("CRAVE Trinity Backend started successfully!")
 
     return app
