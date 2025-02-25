@@ -341,10 +341,6 @@ OPENAI_API_KEY=your_openai_api_key_here
 ```
 ---
 
-Got it! Here’s the **corrected version** with the proper GitHub repository URL:
-
----
-
 ### **⚡ Quick Start**
 #### ✅ **Prerequisites**  
 Before you begin, ensure you have the following installed:
