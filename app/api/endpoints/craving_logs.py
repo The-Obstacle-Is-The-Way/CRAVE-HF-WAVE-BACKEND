@@ -98,6 +98,36 @@ async def create_craving(request: CreateCravingRequest, db: Session = Depends(ge
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create craving: {str(e)}")
 
+@router.get("/cravings/search", response_model=SearchResponse, tags=["Cravings"])
+async def search_cravings_endpoint(
+    user_id: int = Query(..., description="User ID to search cravings for"),
+    query_text: str = Query(..., description="Text to search for in cravings"),
+    top_k: int = Query(5, ge=1, le=100, description="Number of results to return")
+):
+    """
+    Search for cravings using semantic similarity.
+    
+    Leverages vector embeddings to find cravings similar to the provided query text.
+    This powers the RAG (Retrieval-Augmented Generation) component of the system.
+    
+    Returns:
+        SearchResponse: A list of similar cravings with their similarity scores.
+    """
+    try:
+        input_dto = SearchCravingsInput(
+            user_id=user_id,
+            query_text=query_text,
+            top_k=top_k
+        )
+        results = search_cravings(input_dto)
+        return SearchResponse(
+            results=[SearchResult(**r.__dict__) for r in results],
+            query=query_text,
+            count=len(results)
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+
 @router.get("/cravings", response_model=CravingListResponse, tags=["Cravings"])
 async def list_cravings(
     user_id: int = Query(..., description="User ID to filter cravings"),
@@ -147,33 +177,3 @@ async def get_craving(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to retrieve craving: {str(e)}")
-
-@router.get("/cravings/search", response_model=SearchResponse, tags=["Cravings"])
-async def search_cravings_endpoint(
-    user_id: int = Query(..., description="User ID to search cravings for"),
-    query_text: str = Query(..., description="Text to search for in cravings"),
-    top_k: int = Query(5, ge=1, le=100, description="Number of results to return")
-):
-    """
-    Search for cravings using semantic similarity.
-    
-    Leverages vector embeddings to find cravings similar to the provided query text.
-    This powers the RAG (Retrieval-Augmented Generation) component of the system.
-    
-    Returns:
-        SearchResponse: A list of similar cravings with their similarity scores.
-    """
-    try:
-        input_dto = SearchCravingsInput(
-            user_id=user_id,
-            query_text=query_text,
-            top_k=top_k
-        )
-        results = search_cravings(input_dto)
-        return SearchResponse(
-            results=[SearchResult(**r.__dict__) for r in results],
-            query=query_text,
-            count=len(results)
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
