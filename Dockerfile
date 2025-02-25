@@ -15,14 +15,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ \
     libpq-dev \
     ffmpeg \
-    curl \  # ✅ Added curl so you can test API requests from inside the container
+    curl \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# ✅ Install torch first to avoid xformers failing
+# Install torch first to avoid xformers failing
 RUN pip install --no-cache-dir torch==2.0.1
 
-# ✅ Now copy and install all dependencies
+# Now copy and install all dependencies
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
