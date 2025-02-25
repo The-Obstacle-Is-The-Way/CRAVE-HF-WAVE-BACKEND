@@ -1,36 +1,31 @@
-# Use an official Python runtime as a parent image
-FROM python:3.11-slim
+# Dockerfile
+# ------------------------------------------------------------------------------
+# Build a lightweight Docker image for the CRAVE Trinity backend.
+# This image uses Python 3.11-slim, installs dependencies, copies the code,
+# and launches the FastAPI app via Uvicorn.
+# ------------------------------------------------------------------------------
+    FROM python:3.11-slim
 
-# Set environment variables to prevent Python from writing .pyc files
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# Set the working directory inside the container
-WORKDIR /app
-
-# Install system dependencies for PostgreSQL, Hugging Face, and FastAPI
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    gcc \
-    g++ \
-    libpq-dev \
-    ffmpeg \
-    curl \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install torch first to avoid xformers failing
-RUN pip install --no-cache-dir torch==2.0.1
-
-# Now copy and install all dependencies
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r /app/requirements.txt
-
-# Copy the rest of the application
-COPY . /app/
-
-# Expose the port for FastAPI
-EXPOSE 8000
-
-# Run FastAPI with Uvicorn
-CMD ["uvicorn", "app.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    # Prevent Python from writing pyc files to disc and enable unbuffered output.
+    ENV PYTHONDONTWRITEBYTECODE 1
+    ENV PYTHONUNBUFFERED 1
+    
+    # Set the working directory inside the container.
+    WORKDIR /app
+    
+    # Copy dependency lists into the container.
+    COPY requirements.txt .
+    
+    # Upgrade pip and install dependencies without cache.
+    RUN pip install --upgrade pip && \
+        pip install --no-cache-dir -r requirements.txt
+    
+    # Copy the entire codebase into the container.
+    COPY . .
+    
+    # Expose port 8000 to be accessible from the host.
+    EXPOSE 8000
+    
+    # Command to run the application.
+    # The import string "main:app" must match the app defined in main.py.
+    CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

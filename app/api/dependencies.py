@@ -1,54 +1,37 @@
-# crave_trinity_backend/app/api/dependencies.py
 """
-Dependency injection for FastAPI.
-Provides database sessions and repositories for endpoints.
-"""
-from typing import Generator
+app/api/dependencies.py
+-------------------------
+Defines core dependencies and initialization routines for the CRAVE Trinity API.
 
-# Import real repositories
-from app.infrastructure.database.repository import CravingRepository, UserRepository
-from app.infrastructure.database.mock_repository import MockCravingRepository, MockUserRepository
+This module sets up the database connection using SQLAlchemy and exposes
+a helper function (`init_db`) to test connectivity or run initialization logic.
+"""
+
+import os
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from app.config.settings import Settings
+from sqlalchemy.orm import sessionmaker
 
-# Flag to use mock repositories (set to True for YC demo without database)
-USE_MOCK_REPOS = False
+# Read the database URL from the environment, with a fallback for local development.
+DATABASE_URL = os.getenv("SQLALCHEMY_DATABASE_URI", "postgresql://postgres:password@db:5432/crave_db")
 
-settings = Settings()
-engine = create_engine(settings.SQLALCHEMY_DATABASE_URI, echo=False)
+# Create the SQLAlchemy engine.
+engine = create_engine(DATABASE_URL)
+
+# Create a configured "Session" class.
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-def get_db():
+def init_db():
     """
-    Provides a database session.
-    Yields a SQLAlchemy session for endpoint dependencies.
+    Initialize the database connection.
+    
+    This function attempts to connect to the database and can be extended
+    to include migration or seeding logic. A successful connection confirms
+    that the database is up and running.
     """
-    if USE_MOCK_REPOS:
-        # Return None when using mocks
-        yield None
-    else:
-        # Real database connection
-        db = SessionLocal()
-        try:
-            yield db
-        finally:
-            db.close()
-
-def get_craving_repository(db=None):
-    """
-    Get the appropriate craving repository.
-    Returns either a mock or real repository depending on the configuration.
-    """
-    if USE_MOCK_REPOS:
-        return MockCravingRepository()
-    return CravingRepository(db)
-
-def get_user_repository(db=None):
-    """
-    Get the appropriate user repository.
-    Returns either a mock or real repository depending on the configuration.
-    """
-    if USE_MOCK_REPOS:
-        return MockUserRepository()
-    return UserRepository(db)
+    try:
+        with engine.connect() as connection:
+            # Execute a simple query to validate the connection.
+            connection.execute("SELECT 1")
+        print("Database connection established successfully.")
+    except Exception as e:
+        print("Error establishing database connection:", e)
