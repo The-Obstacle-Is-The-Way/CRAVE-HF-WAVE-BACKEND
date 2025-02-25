@@ -1,26 +1,52 @@
-# crave_trinity_backend/app/infrastructure/database/repository.py
+"""
+Repository Module
+
+This module encapsulates all database operations related to the Craving and User entities.
+Following clean code practices, each function is clearly documented for readability and maintainability.
+"""
 
 from sqlalchemy.orm import Session
 from app.core.entities.craving import Craving
 from app.core.entities.user import User
 from .models import CravingModel, UserModel
 
+
 class CravingRepository:
+    """
+    Repository class for handling all Craving-related database operations.
+    """
+
     def __init__(self, db: Session):
+        """
+        Initialize the CravingRepository with a SQLAlchemy session.
+        
+        :param db: SQLAlchemy Session instance for database operations.
+        """
         self.db = db
 
     def create_craving(self, domain_craving: Craving) -> Craving:
+        """
+        Create a new craving record in the database.
+        
+        This method converts a domain Craving object into a database model,
+        persists it, and then converts it back to a domain object with generated fields.
+        
+        :param domain_craving: A Craving domain object containing craving data.
+        :return: A Craving domain object reflecting the stored record (with ID, created_at, etc.).
+        """
+        # Convert the domain object to a database model instance.
         model = CravingModel(
             user_id=domain_craving.user_id,
             description=domain_craving.description,
             intensity=domain_craving.intensity
-            # created_at is auto by server_default=func.now()
         )
+        # Add and commit the model to the database.
         self.db.add(model)
         self.db.commit()
+        # Refresh the instance to load any auto-generated fields (e.g., ID, created_at).
         self.db.refresh(model)
 
-        # Convert back to domain
+        # Convert back to a domain object and return.
         return Craving(
             id=model.id,
             user_id=model.user_id,
@@ -30,10 +56,18 @@ class CravingRepository:
         )
 
     def get_craving(self, craving_id: int) -> Craving:
+        """
+        Retrieve a single craving by its unique identifier.
+        
+        :param craving_id: The unique ID of the craving.
+        :return: The corresponding Craving domain object if found; otherwise, None.
+        """
+        # Query the database for the craving with the given ID.
         model = self.db.query(CravingModel).filter_by(id=craving_id).first()
         if not model:
             return None
 
+        # Convert the database model to a domain object and return.
         return Craving(
             id=model.id,
             user_id=model.user_id,
@@ -42,16 +76,66 @@ class CravingRepository:
             created_at=model.created_at,
         )
 
+    def get_cravings_by_user(self, user_id: int):
+        """
+        Retrieve all cravings associated with a specific user.
+        
+        This method queries the database for all cravings linked to the given user_id,
+        converts each record into a domain object, and returns a list of these objects.
+        
+        :param user_id: The unique ID of the user.
+        :return: A list of Craving domain objects belonging to the specified user.
+        """
+        # Query the database for all cravings for the specified user.
+        models = self.db.query(CravingModel).filter(CravingModel.user_id == user_id).all()
+        # Convert each database model into a domain object.
+        return [
+            Craving(
+                id=model.id,
+                user_id=model.user_id,
+                description=model.description,
+                intensity=model.intensity,
+                created_at=model.created_at,
+            )
+            for model in models
+        ]
+
+
 class UserRepository:
+    """
+    Repository class for handling all User-related database operations.
+    """
+
     def __init__(self, db: Session):
+        """
+        Initialize the UserRepository with a SQLAlchemy session.
+        
+        :param db: SQLAlchemy Session instance for database operations.
+        """
         self.db = db
 
     def create_user(self, domain_user: User) -> User:
+        """
+        Create a new user record in the database.
+        
+        This method converts a domain User object into a database model,
+        persists it, and then converts it back to a domain object with generated fields.
+        
+        :param domain_user: A User domain object containing user data.
+        :return: A User domain object reflecting the stored record (with an auto-generated ID).
+        """
+        # Convert the domain user to a database model instance.
         model = UserModel(email=domain_user.email)
+        # Add and commit the model to the database.
         self.db.add(model)
         self.db.commit()
+        # Refresh the instance to load any auto-generated fields (e.g., ID).
         self.db.refresh(model)
 
-        return User(id=model.id, email=model.email)
+        # Convert back to a domain object and return.
+        return User(
+            id=model.id,
+            email=model.email
+        )
 
-    # More user queries if needed...
+    # Additional user-related database operations can be added here as needed.
