@@ -1,8 +1,11 @@
 """
-Pydantic models for Craving entities.
+app/core/entities/craving.py
+----------------------------
+This module defines the domain entity for a craving.
 
-These models provide validation and serialization for craving data,
-ensuring consistent data exchange between the backend and clients.
+It provides a Pydantic model that represents a craving, including
+fields for the identifier, user association, description, intensity,
+and timestamp. The model is configured to work with ORM objects.
 """
 
 from datetime import datetime
@@ -16,4 +19,5 @@ class Craving(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True  # Allows Pydantic to work with ORM objects
+        # Enable compatibility with ORM objects (e.g., SQLAlchemy models)
+        orm_mode = True

@@ -4,7 +4,7 @@ app/
  └── api/
      ├── main.py           <-- This file
      ├── dependencies.py
-     └── endpoints/
+     └── endpoints/Patient reported upcoming spring break flight and requested Xanax. Informed pt cannot prescribe controlled substances on this platform, which pt retrial of hydroxyzine, pt agreeable as reported only needing for short-term flight anxiety during spring break trip. Pt also reported lower motivation/mood and difficulty getting out of bed related to motivation, expressed interest in retrialing Wellbutrin with Zoloft. Decided to add hydroxyzine and Vistaril to regimen for plane anxiety and general motivation/hedonic capacity. Pt reported significant anxiety. Otherwise, reported fair mood and denied anxiety problems. Denied problems with sleep, interest, guilt, worthlessnessd SI, HI, AVH. Denied concerns for mania.
          ├── health.py
          ├── user_queries.py
          ├── craving_logs.py
