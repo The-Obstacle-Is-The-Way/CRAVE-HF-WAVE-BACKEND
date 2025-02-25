@@ -15,7 +15,7 @@ def generate_insights(user_id: int, query: str | None = None) -> str:
     Returns:
         str: A textual summary of insights.
     """
-    # In a production scenario, you would:
+    # In production, you would:
     #   1. Retrieve the user's craving history.
     #   2. Process the data (e.g., statistical analysis, embedding retrieval).
     #   3. Use an AI language model for natural language generation.

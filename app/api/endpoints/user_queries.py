@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-# Repository for CRUD operations on cravings and dependency for DB sessions.
+# Use the repository and DB dependency
 from app.infrastructure.database.repository import CravingRepository, get_db
 
 router = APIRouter()
@@ -22,10 +22,10 @@ class CravingUpdate(BaseModel):
 async def update_craving(craving_id: int, craving_update: CravingUpdate, db: Session = Depends(get_db)):
     """
     Update an existing craving.
-
-    1. Fetch the current craving via CravingRepository.
+    
+    1. Retrieve the existing craving.
     2. If not found, raise a 404 error.
-    3. Otherwise, update only the fields provided.
+    3. Otherwise, update only provided fields.
     4. Return the updated craving.
     """
     repository = CravingRepository(db)
@@ -39,8 +39,8 @@ async def update_craving(craving_id: int, craving_update: CravingUpdate, db: Ses
 async def delete_craving(craving_id: int, db: Session = Depends(get_db)):
     """
     Soft-delete an existing craving.
-
-    1. Fetch the craving record.
+    
+    1. Retrieve the craving.
     2. If not found, raise a 404 error.
     3. Otherwise, mark it as deleted.
     4. Return a confirmation message.
