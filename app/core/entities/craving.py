@@ -1,14 +1,19 @@
-# crave_trinity_backend/app/core/entities/craving.py
+"""
+Pydantic models for Craving entities.
 
-from dataclasses import dataclass
-from typing import Optional
+These models provide validation and serialization for craving data,
+ensuring consistent data exchange between the backend and clients.
+"""
+
 from datetime import datetime
+from pydantic import BaseModel
 
-@dataclass
-class Craving:
-    id: Optional[int]
+class Craving(BaseModel):
+    id: int
     user_id: int
     description: str
     intensity: int
     created_at: datetime
-    # Add other fields as needed (mood, location, etc.)
+
+    class Config:
+        orm_mode = True  # Allows Pydantic to work with ORM objects
