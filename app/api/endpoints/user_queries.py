@@ -1,19 +1,52 @@
 """
-User Queries Endpoints for CRAVE Trinity.
+Directory Structure (flattened):
+----------------------------------
+/app
+ ├── api
+ │    ├── main.py           <-- API entry point
+ │    ├── dependencies.py
+ │    └── endpoints
+ │         ├── health.py
+ │         ├── user_queries.py   <-- This file
+ │         ├── craving_logs.py
+ │         ├── ai_endpoints.py
+ │         └── search_cravings.py
+ ...
+/app/core/entities/craving.py   <-- Pydantic model for Craving
+/app/infrastructure/database/repository.py   <-- CravingRepository
 
-This endpoint module handles incoming user queries,
-delegating database operations to the CravingRepository.
+Description:
+This module handles incoming user queries for retrieving cravings.
+It delegates data access to the CravingRepository and returns a well‑structured
+response using a dedicated Pydantic model.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from app.api.dependencies import get_db  # Assumes a dependency that returns a SQLAlchemy Session
+from pydantic import BaseModel, Field
+from typing import List
+
+# Dependency: Provides a SQLAlchemy session.
+from app.api.dependencies import get_db
+
+# Repository for interacting with the cravings table.
 from app.infrastructure.database.repository import CravingRepository
-from app.core.entities.craving import Craving  # Pydantic model for response serialization
+
+# Domain model for a craving (ensure this model is configured with orm_mode/from_attributes).
+from app.core.entities.craving import Craving
+
+# Define a dedicated response model for listing cravings.
+class CravingListResponse(BaseModel):
+    cravings: List[Craving] = Field(..., description="List of cravings for the user")
+    count: int = Field(..., description="Total number of cravings returned")
+
+    class Config:
+        # For Pydantic v2, ensure conversion from ORM objects.
+        from_attributes = True
 
 router = APIRouter()
 
-@router.get("/cravings", response_model=dict)
+@router.get("/cravings", response_model=CravingListResponse, tags=["Cravings"])
 def read_cravings(
     user_id: int = Query(..., description="ID of the user to retrieve cravings for"),
     db: Session = Depends(get_db)
@@ -21,17 +54,29 @@ def read_cravings(
     """
     Retrieve all cravings logged by a specific user.
 
-    :param user_id: The ID of the user.
-    :param db: SQLAlchemy Session provided via dependency injection.
-    :return: A dictionary with a list of cravings and their total count.
+    Workflow:
+      1. Receive a user_id via query parameters.
+      2. Obtain a database session through dependency injection.
+      3. Use CravingRepository to fetch the user's cravings.
+      4. Convert the ORM objects to Pydantic models using from_orm.
+      5. Return a structured response containing the list of cravings and a count.
+
+    Returns:
+        CravingListResponse: Contains a list of cravings and the total count.
+
+    Raises:
+        HTTPException (500): If an error occurs during database operations.
     """
-    repository = CravingRepository(db)
-    cravings = repository.get_cravings_by_user(user_id)
-    
-    # If no cravings are found, return an empty list with a count of 0.
-    if not cravings:
-        return {"cravings": [], "count": 0}
-    
-    # Serialize each SQLAlchemy model to a dict using the Pydantic model.
-    cravings_data = [Craving.from_orm(craving).dict() for craving in cravings]
-    return {"cravings": cravings_data, "count": len(cravings_data)}
+    try:
+        repository = CravingRepository(db)
+        cravings = repository.get_cravings_by_user(user_id)
+        
+        # Return an empty list if no cravings are found.
+        if not cravings:
+            return CravingListResponse(cravings=[], count=0)
+        
+        # Convert each SQLAlchemy model instance into a Pydantic model.
+        cravings_out = [Craving.from_orm(craving) for craving in cravings]
+        return CravingListResponse(cravings=cravings_out, count=len(cravings_out))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving cravings: {str(e)}")
