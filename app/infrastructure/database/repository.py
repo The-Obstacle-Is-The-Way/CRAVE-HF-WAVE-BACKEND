@@ -4,7 +4,7 @@ Repository class implementing CRUD operations for cravings.
 Includes get_craving_by_id, update_craving, and delete_craving methods.
 """
 from sqlalchemy.orm import Session
-# Import the CravingModel from the actual source-of-truth.
+# Import the CravingModel from the source-of-truth.
 from app.infrastructure.database.models import CravingModel  
 
 class CravingRepository:
