@@ -1,4 +1,5 @@
 """
+repository.py
 Repository Module
 
 This module encapsulates all database operations related to the Craving and User entities.
@@ -34,19 +35,14 @@ class CravingRepository:
         :param domain_craving: A Craving domain object containing craving data.
         :return: A Craving domain object reflecting the stored record (with ID, created_at, etc.).
         """
-        # Convert the domain object to a database model instance.
         model = CravingModel(
             user_id=domain_craving.user_id,
             description=domain_craving.description,
             intensity=domain_craving.intensity
         )
-        # Add and commit the model to the database.
         self.db.add(model)
         self.db.commit()
-        # Refresh the instance to load any auto-generated fields (e.g., ID, created_at).
         self.db.refresh(model)
-
-        # Convert back to a domain object and return.
         return Craving(
             id=model.id,
             user_id=model.user_id,
@@ -62,12 +58,9 @@ class CravingRepository:
         :param craving_id: The unique ID of the craving.
         :return: The corresponding Craving domain object if found; otherwise, None.
         """
-        # Query the database for the craving with the given ID.
         model = self.db.query(CravingModel).filter_by(id=craving_id).first()
         if not model:
             return None
-
-        # Convert the database model to a domain object and return.
         return Craving(
             id=model.id,
             user_id=model.user_id,
@@ -88,7 +81,6 @@ class CravingRepository:
         :param limit: Maximum number of records to return (default is 100).
         :return: A list of Craving domain objects belonging to the specified user.
         """
-        # Query the database for cravings matching the user_id with pagination.
         models = (
             self.db.query(CravingModel)
             .filter(CravingModel.user_id == user_id)
@@ -96,7 +88,6 @@ class CravingRepository:
             .limit(limit)
             .all()
         )
-        # Convert each database model into a domain object.
         return [
             Craving(
                 id=model.id,
@@ -107,6 +98,15 @@ class CravingRepository:
             )
             for model in models
         ]
+    
+    def count_cravings_by_user(self, user_id: int) -> int:
+        """
+        Count the total number of cravings associated with a specific user.
+        
+        :param user_id: The unique ID of the user.
+        :return: An integer count of cravings.
+        """
+        return self.db.query(CravingModel).filter(CravingModel.user_id == user_id).count()
 
 
 class UserRepository:
@@ -132,18 +132,11 @@ class UserRepository:
         :param domain_user: A User domain object containing user data.
         :return: A User domain object reflecting the stored record (with an auto-generated ID).
         """
-        # Convert the domain user to a database model instance.
         model = UserModel(email=domain_user.email)
-        # Add and commit the model to the database.
         self.db.add(model)
         self.db.commit()
-        # Refresh the instance to load any auto-generated fields (e.g., ID).
         self.db.refresh(model)
-
-        # Convert back to a domain object and return.
         return User(
             id=model.id,
             email=model.email
         )
-
-    # Additional user-related database operations can be added here as needed.
