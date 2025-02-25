@@ -1,3 +1,8 @@
+# First, install torch manually to prevent xformers from breaking
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.0.1  
+
+# Now install everything else
 fastapi==0.100.0
 uvicorn==0.23.0
 pydantic==2.10.6
@@ -18,6 +23,5 @@ alembic==1.11.1
 # Hugging Face & LoRA
 transformers==4.31.0
 accelerate==0.21.0
-torch==2.0.1  # ✅ Move this before xformers so it's installed first
 xformers==0.0.22  # ✅ Install AFTER torch
 peft==0.4.0  # For LoRA
