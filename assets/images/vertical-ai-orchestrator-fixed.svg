@@ -223,7 +223,7 @@
   <!-- Clean Architecture Label -->
   <g id="architectureLabel">
     <text x="450" y="650" font-family="Helvetica" font-size="16" fill="white" text-anchor="middle" font-weight="bold">CLEAN ARCHITECTURE</text>
-    <text x="450" y="670" font-family="Helvetica" font-size="12" fill="#4F8BFF" text-anchor="middle">(SOLID + DoF)</text>
+    <text x="450" y="670" font-family="Helvetica" font-size="12" fill="#4F8BFF" text-anchor="middle">(SOLID + GoF)</text>
     <path d="M300,680 L600,680" stroke="white" stroke-width="1" opacity="0.5" />
   </g>
   
