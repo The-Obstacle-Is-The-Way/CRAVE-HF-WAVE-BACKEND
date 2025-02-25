@@ -6,7 +6,8 @@
 # 1. Install system-level build dependencies required for compiling extensions (e.g., g++, ninja-build).
 # 2. Upgrade pip, install torch first, then install the rest of the Python dependencies.
 #
-# This approach guarantees that xformers (which requires a C++ compiler) can build its wheels.
+# Additionally, this revision copies an entrypoint script that runs Alembic migrations
+# before starting the FastAPI application.
 # ------------------------------------------------------------------------------
     FROM python:3.11-slim
 
@@ -35,8 +36,12 @@
     # Copy the entire application code into the container.
     COPY . .
     
+    # Copy the entrypoint script and ensure it's executable.
+    COPY entrypoint.sh /entrypoint.sh
+    RUN chmod +x /entrypoint.sh
+    
     # Expose the application port.
     EXPOSE 8000
     
-    # Command to run the FastAPI application.
-    CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+    # Use the entrypoint script to run Alembic migrations and then start the FastAPI application.
+    CMD ["/entrypoint.sh"]
