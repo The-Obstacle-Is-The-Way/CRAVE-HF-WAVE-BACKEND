@@ -1,10 +1,16 @@
 #!/bin/bash
 set -e
 
-echo "Running Alembic migrations..."
-# Run migrations; ensure alembic.ini is correctly configured
-alembic upgrade head
+# Check the MIGRATION_MODE environment variable.
+# If it's set to "upgrade", run the full upgrade;
+# Otherwise (or if set to "stamp"), stamp the database as head.
+if [ "$MIGRATION_MODE" = "upgrade" ]; then
+  echo "Running Alembic upgrade head..."
+  alembic upgrade head
+else
+  echo "Stamping the database as head..."
+  alembic stamp head
+fi
 
 echo "Starting FastAPI..."
-# Start the FastAPI server (adjust the module path if needed)
 exec uvicorn app.api.main:app --host 0.0.0.0 --port 8000
