@@ -339,32 +339,6 @@ OPENAI_API_KEY=your_openai_api_key_here
 ```
 ---
 
-### **⚡ Quick Start**
-#### ✅ **Prerequisites**  
-Before you begin, ensure you have the following installed:
-
-- 🐳 **Docker & Docker Compose** for containerized setup  
-- 🐍 **Python 3.11** (if running locally)  
-- 🤗 **Hugging Face CLI** (for private models & LoRA fine-tuning)  
-
-#### 📥 **Clone the Repository**
-```bash
-git clone https://github.com/Crave-Trinity/crave-trinity-backend.git
-cd crave-trinity-backend
-```
-
-#### 🔧 **Configure Environment Variables**  
-Create a `.env` file in the project root with the necessary credentials:
-
-```ini
-SQLALCHEMY_DATABASE_URI=postgresql://postgres:password@db:5432/crave_db
-PINECONE_API_KEY=your_pinecone_api_key_here
-PINECONE_ENV=us-east-1-aws
-PINECONE_INDEX_NAME=crave-embeddings
-OPENAI_API_KEY=your_openai_api_key_here
-```
----
-
 ### 🤗 **Set Up Hugging Face Authentication (Required for LoRA & Llama 2)**
 1️⃣ **Log in to Hugging Face inside the container:**
 ```bash
