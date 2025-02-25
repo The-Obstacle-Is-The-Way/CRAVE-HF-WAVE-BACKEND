@@ -210,9 +210,7 @@ jj@DESKTOP-L9V85UA:/mnt/c/Users/JJ/Desktop/CRAVE/crave_trinity_backend$ tree -I 
 #   smoke weed 🍃 all day, and watch cartoons and old movies.                     
 #   My whole life is a series of stratagems to avoid, and outwit, that guy."  
 #                                                                              
-#   - Anthony Bourdain                                                         
-#                                                                              
-#   CRAVE: Because understanding your cravings shouldn't be complicated 🍫
+#   - Anthony Bourdain                                                                                                                         
 #                                                                              
 ################################################################################
 #
