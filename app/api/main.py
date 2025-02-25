@@ -1,85 +1,54 @@
-# crave_trinity_backend/app/api/main.py
-from fastapi import FastAPI, APIRouter
-from app.api.endpoints import health, craving_logs, ai_endpoints
-from app.infrastructure.vector_db.pinecone_client import init_pinecone
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from app.config.settings import Settings
-from app.core.use_cases.initialize_database import initialize_database, seed_demo_users
+"""
+Directory Structure (excerpt):
+app/
+ └── api/
+     ├── main.py           <-- This file
+     ├── dependencies.py
+     └── endpoints/
+         ├── health.py
+         ├── user_queries.py
+         ├── craving_logs.py
+         ├── ai_endpoints.py
+         └── search_cravings.py
+...
 
-def create_app() -> FastAPI:
-    """
-    Creates and configures the FastAPI application.
-    
-    This is the entry point for the CRAVE Trinity Backend,
-    following clean architecture principles where:
-    - API layer is responsible only for HTTP interactions
-    - Core business logic is isolated in use cases
-    - Infrastructure concerns are separated from domain logic
-    """
-    app = FastAPI(
-        title="CRAVE Trinity Backend",
-        description="Backend for craving analytics and AI-powered insights",
-        version="0.1.0",
-        docs_url="/docs",  # Explicit declaration of Swagger UI endpoint
-        redoc_url="/redoc"  # ReDoc alternative documentation
-    )
-    
-    # Create API router with /api prefix
-    api_router = APIRouter(prefix="/api")
-    
-    # Include all endpoint routers
-    api_router.include_router(health.router, tags=["Health"])
-    api_router.include_router(craving_logs.router, tags=["Cravings"])
-    api_router.include_router(ai_endpoints.router, tags=["AI"])
-    
-    # Add the API router to the main app
-    app.include_router(api_router)
-    
-    # Also include routes at root level for backward compatibility
-    # and simpler direct access
-    app.include_router(health.router, tags=["Health"])
-    app.include_router(craving_logs.router, tags=["Cravings"])
-    app.include_router(ai_endpoints.router, tags=["AI"])
+Description:
+This module creates the FastAPI application for the CRAVE Trinity Backend,
+registers all the endpoint routers, and defines startup events. The routers
+include health checks, user queries, craving logs, AI endpoints, and the search endpoint.
+"""
 
-    @app.on_event("startup")
-    def startup_event():
-        """
-        Executes when the application starts.
-        Initializes external dependencies and database.
-        """
-        # Initialize Pinecone
-        try:
-            init_pinecone()
-        except Exception as e:
-            print(f"Warning: Pinecone initialization error: {e}")
-            
-        # Initialize database and seed users
-        try:
-            settings = Settings()
-            engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
-            initialize_database(engine)
-            
-            # Create a session and seed demo users
-            SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-            db = SessionLocal()
-            try:
-                seed_demo_users(db)
-            finally:
-                db.close()
-                
-            print("Database initialized successfully with demo users")
-        except Exception as e:
-            print(f"Warning: Database initialization error: {e}")
-            
-        print("CRAVE Trinity Backend started successfully!")
+from fastapi import FastAPI
 
-    return app
+# Import routers from the endpoints modules.
+from app.api.endpoints.health import router as health_router
+from app.api.endpoints.user_queries import router as user_queries_router
+from app.api.endpoints.craving_logs import router as craving_logs_router
+from app.api.endpoints.ai_endpoints import router as ai_router
+from app.api.endpoints.search_cravings import router as search_router
 
-# Create the application instance
-app = create_app()
+# Create the FastAPI app with metadata.
+app = FastAPI(
+    title="CRAVE Trinity Backend",
+    description="A modular, AI-powered backend for craving analytics",
+    version="0.1.0"
+)
 
-# This allows running the application directly with 'python app/api/main.py'
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# Register routers with appropriate URL prefixes.
+app.include_router(health_router, prefix="/api/health")
+app.include_router(user_queries_router, prefix="/api/cravings")
+app.include_router(craving_logs_router, prefix="/api/cravings")
+app.include_router(ai_router, prefix="/api")
+app.include_router(search_router, prefix="/api/cravings")
+
+# Define a simple root endpoint for a welcome message.
+@app.get("/")
+def root():
+    return {"message": "Welcome to the CRAVE Trinity Backend API"}
+
+# Application startup event: initialize required resources (e.g., database).
+@app.on_event("startup")
+def on_startup():
+    from app.api.dependencies import init_db
+    init_db()
+    print("Startup complete: Database and other resources initialized.")
