@@ -45,8 +45,6 @@ The world's first self-optimizing craving intelligence system—a backend powere
   <img src="assets/images/vertical-ai-orchestrator-fixed.svg" alt="Vertical AI Orchestration System" width="800">
 </div>
 
----
-
 🧠 **Intelligent Persona System**
 
 * AI-powered LoRA hot-swapping ensures only relevant craving personas are active, with dynamic offloading of unused personas and continuous optimization based on real-world triggers
