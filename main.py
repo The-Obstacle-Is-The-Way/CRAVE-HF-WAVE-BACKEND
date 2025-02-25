@@ -1,16 +1,17 @@
+################################################################################
+#                                                                              
+#  "I understand there's a guy inside me who wants to lay in bed,              
+#   smoke weed 🍃 all day, and watch cartoons and old movies.                     
+#   My whole life is a series of stratagems to avoid, and outwit, that guy."  
+#                                                                              
+#   - Anthony Bourdain                                                                                                                         
+#                                                                              
+################################################################################
+#
+#
+#
 """
-Directory Structure (excerpt):
-.
-├── main.py                <-- This file
-├── app
-│   └── api
-│       └── main.py        <-- API entry point
-│       └── endpoints
-│           ├── health.py
-│           ├── user_queries.py
-│           ├── craving_logs.py
-│           ├── ai_endpoints.py
-│           └── search_cravings.py
+main.py
 ...
 
 Description:
