@@ -1,69 +1,42 @@
-# crave_trinity_backend/app/infrastructure/vector_db/vector_repository.py
-
-from typing import List
+# File: app/infrastructure/vector_db/vector_repository.py
+"""
+Vector repository for handling Pinecone-based retrieval operations.
+Optimized for fast, reliable search of craving embeddings.
+"""
 import pinecone
-from app.infrastructure.vector_db.pinecone_client import get_pinecone_index
-from app.config.settings import Settings
-
-# Load settings from environment
-settings = Settings()
+from app.config.settings import PINECONE_INDEX_NAME  # Ensure your settings include your index name
 
 class VectorRepository:
-    def __init__(self, index_name: str = None):
-        """
-        Initializes the vector repository.
-        
-        Parameters:
-          index_name (str): The name of the Pinecone index to use.
-                            Defaults to the one specified in Settings.
-        """
-        self.index_name = index_name or settings.PINECONE_INDEX_NAME
-        # Retrieve the Pinecone index (this will also initialize Pinecone)
-        self.index = get_pinecone_index(self.index_name)
+    def __init__(self):
+        # Initialize the Pinecone index using the provided index name.
+        self.index = pinecone.Index(PINECONE_INDEX_NAME)
 
-    def upsert_craving_embedding(
-        self, 
-        craving_id: int, 
-        embedding: List[float], 
-        metadata: dict
-    ) -> None:
+    def search_cravings(self, embedding: list[float], top_k: int = 10) -> dict:
         """
-        Upserts a craving vector into the Pinecone index.
-        
-        Parameters:
-          craving_id (int): Unique identifier for the craving record.
-          embedding (List[float]): The embedding vector.
-          metadata (dict): Additional metadata to store with the vector.
-        """
-        upsert_data = [(str(craving_id), embedding, metadata)]
-        self.index.upsert(vectors=upsert_data)
+        Execute a vector search on Pinecone.
 
-    def query_cravings(
-        self, 
-        query_embedding: List[float], 
-        top_k: int = 5
-    ) -> List[dict]:
-        """
-        Queries the Pinecone index for vectors similar to the query vector.
-        
-        Parameters:
-          query_embedding (List[float]): The embedding vector for the query.
-          top_k (int): The number of nearest neighbors to return.
-        
+        Args:
+            embedding (list[float]): The vector representation of the query.
+            top_k (int): The number of top results to retrieve.
+
         Returns:
-          A list of dictionaries containing 'id', 'score', and 'metadata' for each match.
+            dict: Search results including metadata.
         """
-        result = self.index.query(
-            vector=query_embedding,
-            top_k=top_k,
-            include_values=False,  # We don't need the stored vector in the response
-            include_metadata=True
-        )
-        matches = []
-        for match in result.matches:
-            matches.append({
-                "id": match.id,
-                "score": match.score,
-                "metadata": match.metadata
-            })
-        return matches
+        results = self.index.query(vector=embedding, top_k=top_k, include_metadata=True)
+        return results
+
+    def upsert_craving_embedding(self, craving_id: int, embedding: list[float], metadata: dict) -> None:
+        """
+        Upsert a craving's embedding to the Pinecone index.
+
+        Args:
+            craving_id (int): Unique identifier of the craving.
+            embedding (list[float]): The embedding vector.
+            metadata (dict): Additional metadata to store.
+        """
+        vector = {
+            "id": str(craving_id),
+            "values": embedding,
+            "metadata": metadata
+        }
+        self.index.upsert(vectors=[vector])

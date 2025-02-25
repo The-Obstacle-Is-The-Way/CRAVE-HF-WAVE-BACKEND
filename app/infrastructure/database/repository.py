@@ -1,71 +1,57 @@
+# File: app/infrastructure/database/repository.py
 """
-app/infrastructure/database/repository.py
--------------------------------------------
-Repository for managing CRUD operations for cravings.
-
-This module provides a centralized class for interacting with the
-cravings table in the database. It includes methods to create new
-cravings, retrieve cravings for a given user, and search cravings
-by a text query.
+Repository class implementing CRUD operations for cravings.
+Includes get_craving_by_id, update_craving, and delete_craving methods.
 """
-
 from sqlalchemy.orm import Session
-from app.infrastructure.database.models import CravingModel
+from app.models.craving_model import CravingModel  # Ensure this SQLAlchemy model exists
 
 class CravingRepository:
     def __init__(self, db: Session):
-        """
-        Initialize the repository with a SQLAlchemy session.
-
-        Args:
-            db (Session): A SQLAlchemy session instance.
-        """
         self.db = db
 
-    def create_craving(self, craving_data: dict) -> CravingModel:
+    def get_craving_by_id(self, craving_id: int) -> CravingModel | None:
         """
-        Create a new craving record in the database.
-
-        Args:
-            craving_data (dict): A dictionary containing craving details.
-
-        Returns:
-            CravingModel: The newly created craving instance.
+        Retrieve a craving by ID, ensuring it's not marked as deleted.
         """
-        new_craving = CravingModel(**craving_data)
-        self.db.add(new_craving)
+        return self.db.query(CravingModel).filter(
+            CravingModel.id == craving_id,
+            CravingModel.is_deleted == False
+        ).first()
+
+    def update_craving(self, craving_id: int, update_data: dict) -> CravingModel | None:
+        """
+        Update the specified fields of a craving.
+        """
+        craving = self.get_craving_by_id(craving_id)
+        if not craving:
+            return None
+        for key, value in update_data.items():
+            setattr(craving, key, value)
         self.db.commit()
-        self.db.refresh(new_craving)
-        return new_craving
+        self.db.refresh(craving)
+        return craving
 
-    def get_cravings_by_user(self, user_id: int, limit: int = None) -> list:
+    def delete_craving(self, craving_id: int) -> CravingModel | None:
         """
-        Retrieve all cravings for a specified user.
-
-        Args:
-            user_id (int): The ID of the user.
-            limit (int, optional): Optional limit for the number of records.
-
-        Returns:
-            list: A list of CravingModel instances for the user.
+        Soft-delete a craving by setting its is_deleted flag to True.
         """
-        query = self.db.query(CravingModel).filter(CravingModel.user_id == user_id)
-        if limit is not None:
-            query = query.limit(limit)
-        return query.all()
+        craving = self.get_craving_by_id(craving_id)
+        if not craving:
+            return None
+        craving.is_deleted = True  # Soft delete
+        self.db.commit()
+        return craving
 
-    def search_cravings(self, query_text: str) -> list:
-        """
-        Search for cravings that contain the query text in their description.
+# Dependency to get a DB session.
+from app.infrastructure.database.session import SessionLocal  # Adjust based on your project structure
 
-        This method performs a case-insensitive search using SQL's LIKE operator.
-
-        Args:
-            query_text (str): The text to search for in craving descriptions.
-
-        Returns:
-            list: A list of CravingModel instances matching the search criteria.
-        """
-        # Construct the search pattern for a case-insensitive match.
-        search_pattern = f"%{query_text}%"
-        return self.db.query(CravingModel).filter(CravingModel.description.ilike(search_pattern)).all()
+def get_db():
+    """
+    Provides a SQLAlchemy session.
+    """
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
