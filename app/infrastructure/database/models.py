@@ -6,7 +6,7 @@ Updated to include the 'is_deleted' field for soft deletion.
 """
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 import datetime
 
 # Base class for all models.
@@ -16,6 +16,7 @@ class CravingModel(Base):
     __tablename__ = "cravings"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False)  # Add this line
     description = Column(String, nullable=False)
     intensity = Column(Integer, nullable=False)
     # Added is_deleted field for soft deletion functionality.
