@@ -76,18 +76,26 @@ class CravingRepository:
             created_at=model.created_at,
         )
 
-    def get_cravings_by_user(self, user_id: int):
+    def get_cravings_by_user(self, user_id: int, skip: int = 0, limit: int = 100):
         """
-        Retrieve all cravings associated with a specific user.
+        Retrieve all cravings associated with a specific user, with optional pagination.
         
         This method queries the database for all cravings linked to the given user_id,
-        converts each record into a domain object, and returns a list of these objects.
+        applies pagination parameters, converts each record into a domain object, and returns a list.
         
         :param user_id: The unique ID of the user.
+        :param skip: Number of records to skip (default is 0).
+        :param limit: Maximum number of records to return (default is 100).
         :return: A list of Craving domain objects belonging to the specified user.
         """
-        # Query the database for all cravings for the specified user.
-        models = self.db.query(CravingModel).filter(CravingModel.user_id == user_id).all()
+        # Query the database for cravings matching the user_id with pagination.
+        models = (
+            self.db.query(CravingModel)
+            .filter(CravingModel.user_id == user_id)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
         # Convert each database model into a domain object.
         return [
             Craving(
