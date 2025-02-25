@@ -2,7 +2,7 @@
 """
 Administrative endpoints for database management and system maintenance.
 
-These endpoints provide direct database fixes and schema management 
+These endpoints provide direct database fixes and schema management
 without relying on dependencies from other modules.
 """
 from fastapi import APIRouter
