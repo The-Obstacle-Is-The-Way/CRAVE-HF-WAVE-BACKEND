@@ -8,18 +8,19 @@ ENV PYTHONUNBUFFERED=1
 # Set the working directory inside the container
 WORKDIR /app
 
-# Install system dependencies for PostgreSQL, Hugging Face, and fastAPI
+# Install system dependencies for PostgreSQL, Hugging Face, and FastAPI
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     gcc \
     g++ \
     libpq-dev \
     ffmpeg \
+    curl \  # ✅ Added curl so you can test API requests from inside the container
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # ✅ Install torch first to avoid xformers failing
-RUN pip install torch==2.0.1
+RUN pip install --no-cache-dir torch==2.0.1
 
 # ✅ Now copy and install all dependencies
 COPY requirements.txt /app/
