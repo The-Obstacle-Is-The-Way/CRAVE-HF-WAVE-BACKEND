@@ -1,55 +1,82 @@
+# File: app/infrastructure/external/transcription_service.py
+
 """
-Application settings loaded from environment variables.
-
-This class consolidates all configuration settings for the CRAVE Trinity Backend.
-Sensitive values (such as API keys, database URIs, etc.) should be stored in
-Railway environment variables or a local .env file (which is not committed).
+Transcription Service
+--------------------
+Provides audio transcription functionality using OpenAI's Whisper API.
+Compatible with OpenAI Python SDK v1.x+
 """
-from pydantic_settings import BaseSettings
-from pydantic import Field
 
-class Settings(BaseSettings):
-    # General project settings
-    PROJECT_NAME: str = "CRAVE Trinity Backend"
-    ENV: str = "development"
+from typing import BinaryIO, Optional
+import os
+from openai import OpenAI
+from app.core.entities.voice_log import VoiceLog
+from app.config.settings import Settings
 
-    # Database connection URI.
-    SQLALCHEMY_DATABASE_URI: str = "postgresql://postgres:password@db:5432/crave_db"
+# Load settings once at module level
+settings = Settings()
 
-    # Pinecone configuration:
-    PINECONE_API_KEY: str
-    PINECONE_ENV: str = "us-east-1-aws"
-    PINECONE_INDEX_NAME: str = "crave-embeddings"
-
-    # OpenAI API key for text embeddings.
-    OPENAI_API_KEY: str
-
-    # Hugging Face API Key.
-    HUGGINGFACE_API_KEY: str
-
-    # Llama 2 model configuration:
-    LLAMA2_MODEL_NAME: str = "meta-llama/Llama-2-13b-chat-hf"
-
-    # LoRA adapters for different user personas.
-    LORA_PERSONAS: dict = {
-        "NighttimeBinger": "path_or_hub/nighttime-binger-lora",
-        "StressCraver": "path_or_hub/stress-craver-lora",
-    }
-
-    # -------------------------------------------------------------------------
-    # JWT-Related fields (read from Railway or local .env)
-    # -------------------------------------------------------------------------
-    # Remove the default if you want to force setting them via environment vars:
-    JWT_SECRET: str = Field("PLEASE_CHANGE_ME", env="JWT_SECRET")
-    JWT_ALGORITHM: str = Field("HS256", env="JWT_ALGORITHM")
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(60, env="JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
-
-    class Config:
-        # Railway or local .env
-        env_file = ".env"
-        extra = "allow"
-
-if __name__ == "__main__":
-    # Debug: print out all settings to verify they're loaded correctly.
-    settings = Settings()
-    print(settings.dict())
+class TranscriptionService:
+    """
+    Service for transcribing audio files using OpenAI's Whisper model.
+    Follows the new OpenAI v1.x+ API conventions.
+    """
+    
+    def __init__(self, openai_api_key: Optional[str] = None):
+        """
+        Initialize the transcription service with an OpenAI API key.
+        
+        Args:
+            openai_api_key: Optional override for the OpenAI API key.
+                          Defaults to the value from Settings if not provided.
+        """
+        # Use provided key or fall back to settings
+        self.api_key = openai_api_key or settings.OPENAI_API_KEY
+        self.client = OpenAI(api_key=self.api_key)
+        self.default_model = "whisper-1"
+    
+    def transcribe_audio(self, voice_log: VoiceLog) -> str:
+        """
+        Transcribe an audio file using OpenAI's Whisper model.
+        
+        Args:
+            voice_log: A VoiceLog entity containing the file_path to the audio file
+                      to be transcribed.
+                      
+        Returns:
+            str: The transcribed text.
+            
+        Raises:
+            FileNotFoundError: If the audio file does not exist.
+            IOError: If the audio file cannot be read.
+            Exception: If the OpenAI API returns an error.
+        """
+        if not os.path.exists(voice_log.file_path):
+            raise FileNotFoundError(f"Audio file not found at path: {voice_log.file_path}")
+            
+        try:
+            with open(voice_log.file_path, "rb") as audio_file:
+                return self._perform_transcription(audio_file)
+        except IOError as e:
+            raise IOError(f"Error reading audio file: {str(e)}")
+    
+    def _perform_transcription(self, audio_file: BinaryIO) -> str:
+        """
+        Internal method to perform the actual transcription API call.
+        
+        Args:
+            audio_file: An open binary file object containing the audio data.
+            
+        Returns:
+            str: The transcribed text.
+        """
+        try:
+            # Using the new OpenAI v1.x+ API format
+            response = self.client.audio.transcriptions.create(
+                file=audio_file,
+                model=self.default_model
+            )
+            return response.text
+        except Exception as e:
+            # TODO: Add proper logging here
+            raise Exception(f"Transcription failed: {str(e)}")
