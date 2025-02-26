@@ -1,8 +1,10 @@
 # File: app/api/endpoints/live_updates.py
 
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, status
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, status, Query
 from sqlalchemy.orm import Session
 from typing import Dict, List, Any
+from datetime import datetime
+import json
 
 from app.infrastructure.auth.jwt_handler import decode_access_token
 from app.infrastructure.database.session import get_db
@@ -34,13 +36,34 @@ class ConnectionManager:
         """Send a message to a specific user's connections."""
         if user_id in self.active_connections:
             for connection in self.active_connections[user_id]:
-                await connection.send_json(message)
+                try:
+                    await connection.send_json(message)
+                except Exception:
+                    # Connection might be closed or broken
+                    self.disconnect(connection, user_id)
 
     async def broadcast(self, message: Any):
         """Send a message to all connected clients."""
-        for user_id in self.active_connections:
-            for connection in self.active_connections[user_id]:
-                await connection.send_json(message)
+        disconnected_users = []
+        for user_id, connections in self.active_connections.items():
+            disconnected_connections = []
+            for connection in connections:
+                try:
+                    await connection.send_json(message)
+                except Exception:
+                    disconnected_connections.append(connection)
+            
+            # Remove broken connections
+            for conn in disconnected_connections:
+                self.active_connections[user_id].remove(conn)
+            
+            # Track empty user entries for cleanup
+            if not self.active_connections[user_id]:
+                disconnected_users.append(user_id)
+        
+        # Clean up empty user entries
+        for user_id in disconnected_users:
+            del self.active_connections[user_id]
 
 
 # Create a singleton connection manager
@@ -50,7 +73,7 @@ manager = ConnectionManager()
 @router.websocket("/live-updates")
 async def websocket_endpoint(
     websocket: WebSocket, 
-    token: str = None,
+    token: str = Query(None),
     db: Session = Depends(get_db)
 ):
     """
@@ -75,16 +98,29 @@ async def websocket_endpoint(
         # Connect this websocket
         await manager.connect(websocket, user_id)
         
+        # Send initial connection confirmation
+        await websocket.send_json({
+            "type": "connection_established",
+            "message": "Connected to real-time updates",
+            "timestamp": datetime.utcnow().isoformat(),
+            "user_id": user_id
+        })
+        
         try:
             # Keep the connection alive and process messages
             while True:
                 # Receive JSON data from the client
                 data = await websocket.receive_json()
                 
-                # Process any incoming messages (if needed)
+                # Process any incoming messages
                 # For now, we just echo back the message
                 await manager.send_personal_message(
-                    {"message": "Received", "data": data},
+                    {
+                        "type": "echo",
+                        "message": "Server received your message",
+                        "data": data,
+                        "timestamp": datetime.utcnow().isoformat()
+                    },
                     user_id
                 )
                 
@@ -95,3 +131,49 @@ async def websocket_endpoint(
     except Exception as e:
         # Invalid token or other error
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+
+
+# Utility function to notify users about new cravings
+# This would be called from the craving creation endpoint
+async def notify_new_craving(user_id: int, craving_data: dict):
+    """
+    Send a notification about a new craving to the user.
+    
+    Args:
+        user_id: The ID of the user who created the craving
+        craving_data: Data about the craving that was created
+    """
+    await manager.send_personal_message(
+        {
+            "type": "new_craving",
+            "message": "New craving logged",
+            "data": craving_data,
+            "timestamp": datetime.utcnow().isoformat()
+        },
+        user_id
+    )
+
+
+# Utility function to notify users about completed transcriptions
+# This would be called when a transcription is completed
+async def notify_transcription_complete(user_id: int, voice_log_id: int, transcript: str):
+    """
+    Send a notification about a completed voice log transcription.
+    
+    Args:
+        user_id: The ID of the user who owns the voice log
+        voice_log_id: The ID of the voice log that was transcribed
+        transcript: The transcribed text
+    """
+    await manager.send_personal_message(
+        {
+            "type": "transcription_complete",
+            "message": "Voice log transcription completed",
+            "data": {
+                "voice_log_id": voice_log_id,
+                "transcript": transcript
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        },
+        user_id
+    )

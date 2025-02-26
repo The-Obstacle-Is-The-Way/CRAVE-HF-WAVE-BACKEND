@@ -1,8 +1,9 @@
 # File: app/api/endpoints/voice_logs_enhancement.py
 
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from app.infrastructure.auth.auth_service import AuthService
 from app.infrastructure.database.session import get_db
@@ -11,13 +12,27 @@ from app.infrastructure.database.voice_logs_repository import VoiceLogsRepositor
 from app.core.services.voice_logs_service import VoiceLogsService
 from app.infrastructure.external.transcription_service import TranscriptionService
 from app.core.entities.voice_log_schemas import VoiceLogOut
+from app.core.entities.voice_log import VoiceLog
 
 router = APIRouter()
 
 # Dependency to get repositories and services
-def get_voice_logs_service(db: Session = Depends(get_db)):
+def get_voice_logs_service(db: Session = Depends(get_db)) -> VoiceLogsService:
+    """
+    Create and return a VoiceLogsService instance.
+    
+    This dependency injects the repository into the service,
+    following the clean architecture principles of dependency injection.
+    
+    Args:
+        db: Database session
+        
+    Returns:
+        VoiceLogsService: A service for managing voice logs
+    """
     repo = VoiceLogsRepository(db)
     return VoiceLogsService(repo)
+
 
 @router.post("/{voice_log_id}/retry-transcription", response_model=VoiceLogOut)
 async def retry_transcription(
@@ -29,14 +44,25 @@ async def retry_transcription(
     """
     Retry transcription for a voice log that previously failed or had poor quality.
     
-    This API enables retrying transcription with different settings or after
-    resolving issues that may have caused a previous failure.
+    This endpoint provides a way to retry transcription for voice logs that:
+    1. Failed to transcribe initially
+    2. Had poor transcription quality
+    3. Were in a PENDING state but never completed
+    
+    The transcription is scheduled as a background task to avoid blocking
+    the request/response cycle, especially for longer audio files.
     
     Args:
         voice_log_id: ID of the voice log to retry transcription for
+        background_tasks: FastAPI background tasks handler
+        service: Voice logs service
+        current_user: The authenticated user
         
     Returns:
-        The updated voice log with the new transcription status
+        VoiceLogOut: The updated voice log with the transcription status
+        
+    Raises:
+        HTTPException: If the voice log doesn't exist, isn't accessible, or can't be updated
     """
     # Get the voice log
     voice_log = service.get_voice_log(voice_log_id)
@@ -50,7 +76,7 @@ async def retry_transcription(
     
     # Check if retry is needed - only retry if failed or pending
     if voice_log.transcription_status == "COMPLETED" and voice_log.transcribed_text:
-        return voice_log
+        return VoiceLogOut(**voice_log.dict())
     
     # Mark as pending transcription
     updated_log = service.trigger_transcription(voice_log_id)
@@ -67,7 +93,7 @@ async def retry_transcription(
         voice_log_id
     )
     
-    return updated_log
+    return VoiceLogOut(**updated_log.dict())
 
 
 @router.get("/{voice_log_id}/status", response_model=Dict[str, Any])
@@ -84,9 +110,14 @@ async def get_transcription_status(
     
     Args:
         voice_log_id: ID of the voice log to check
+        service: Voice logs service
+        current_user: The authenticated user
         
     Returns:
-        A dictionary with status information
+        dict: A dictionary with status information
+        
+    Raises:
+        HTTPException: If the voice log doesn't exist or isn't accessible
     """
     voice_log = service.get_voice_log(voice_log_id)
     
@@ -104,7 +135,7 @@ async def get_transcription_status(
         "transcription_status": voice_log.transcription_status,
         "has_transcript": bool(voice_log.transcribed_text),
         "transcript_length": len(voice_log.transcribed_text) if voice_log.transcribed_text else 0,
-        "last_updated": voice_log.updated_at.isoformat() if voice_log.updated_at else None
+        "last_updated": voice_log.updated_at.isoformat() if hasattr(voice_log, "updated_at") and voice_log.updated_at else None
     }
 
 
@@ -118,13 +149,19 @@ async def analyze_voice_log(
     Analyze a voice log's transcript for sentiment, topics, and other insights.
     
     This endpoint demonstrates how to extract additional value from transcribed
-    voice logs through NLP analysis.
+    voice logs through basic NLP analysis. In a production environment, this would
+    likely use more sophisticated NLP services or models.
     
     Args:
         voice_log_id: ID of the voice log to analyze
+        service: Voice logs service
+        current_user: The authenticated user
         
     Returns:
-        A dictionary with analysis results
+        dict: Analysis results including sentiment and topic detection
+        
+    Raises:
+        HTTPException: If the voice log doesn't exist, isn't accessible, or isn't transcribed
     """
     voice_log = service.get_voice_log(voice_log_id)
     

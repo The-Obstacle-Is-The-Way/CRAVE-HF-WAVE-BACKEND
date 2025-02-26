@@ -6,12 +6,13 @@ import psutil
 import time
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy import func, text
+from sqlalchemy import func, text, inspect
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any, Optional
+import json
 
-from app.infrastructure.database.session import get_db
-from app.infrastructure.database.models import UserModel, CravingModel, Base
+from app.infrastructure.database.session import get_db, engine
+from app.infrastructure.database.models import UserModel, CravingModel, VoiceLogModel, Base
 from app.infrastructure.auth.auth_service import AuthService
 from app.config.settings import Settings
 
@@ -23,14 +24,40 @@ router = APIRouter()
 
 # Helper function to check if user is admin
 def is_admin(user: UserModel) -> bool:
-    """Check if the user has admin privileges."""
+    """
+    Check if the user has admin privileges.
+    
+    In a production system, you would use a proper role-based access
+    control system. For this MVP, we're simply checking if the user ID is 1.
+    
+    Args:
+        user: The user model to check
+        
+    Returns:
+        bool: True if the user is an admin, False otherwise
+    """
     # In a real app, you might have an 'is_admin' field or role-based access
     # For simplicity, we're checking if user ID is 1 (first user)
     return user.id == 1
 
+
 # Admin-only dependency
 def admin_only(current_user: UserModel = Depends(AuthService().get_current_user)):
-    """Dependency to ensure only admins can access the endpoint."""
+    """
+    Dependency to ensure only admins can access the endpoint.
+    
+    This function will be used as a dependency for admin-only endpoints.
+    It checks if the current user is an admin and raises an exception if not.
+    
+    Args:
+        current_user: The current authenticated user
+        
+    Returns:
+        UserModel: The current user if they are an admin
+        
+    Raises:
+        HTTPException: If the user is not an admin
+    """
     if not is_admin(current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -52,13 +79,15 @@ async def get_application_logs(
     
     Args:
         lines: Number of log lines to return (default: 100, max: 10000)
+        admin_user: The admin user making the request (from dependency)
         
     Returns:
         dict: A dictionary containing log entries and metadata
     """
     try:
         settings = Settings()
-        log_file_path = settings.LOG_FILE_PATH or "app.log"
+        # Default log path - adjust based on your logging configuration
+        log_file_path = getattr(settings, "LOG_FILE_PATH", "app.log")
         
         if not os.path.exists(log_file_path):
             return {
@@ -105,6 +134,10 @@ async def get_system_metrics(
     
     Requires admin privileges.
     
+    Args:
+        admin_user: The admin user making the request (from dependency)
+        db: Database session
+        
     Returns:
         dict: A dictionary of metrics and their values
     """
@@ -120,33 +153,55 @@ async def get_system_metrics(
         # Database metrics
         db_metrics = {}
         
-        # Get table counts
         try:
-            # Count users
-            user_count = db.query(func.count(UserModel.id)).scalar()
-            db_metrics["total_users"] = user_count
+            # Get table counts and statistics
+            inspector = inspect(engine)
             
-            # Count active users in the last 30 days
-            thirty_days_ago = datetime.utcnow() - timedelta(days=30)
-            active_users = db.query(func.count(UserModel.id)).filter(
-                UserModel.last_login_at >= thirty_days_ago
-            ).scalar()
-            db_metrics["active_users_30d"] = active_users or 0
+            # Count users
+            try:
+                user_count = db.query(func.count(UserModel.id)).scalar()
+                db_metrics["total_users"] = user_count
+                
+                # Count active users in the last 30 days (if last_login_at exists)
+                if "last_login_at" in [column["name"] for column in inspector.get_columns("users")]:
+                    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+                    active_users = db.query(func.count(UserModel.id)).filter(
+                        UserModel.last_login_at >= thirty_days_ago
+                    ).scalar()
+                    db_metrics["active_users_30d"] = active_users or 0
+            except Exception as e:
+                db_metrics["users_error"] = str(e)
             
             # Count cravings
-            craving_count = db.query(func.count(CravingModel.id)).scalar()
-            db_metrics["total_cravings"] = craving_count
-            
-            # Get cravings in the last 24 hours
-            day_ago = datetime.utcnow() - timedelta(days=1)
-            recent_cravings = db.query(func.count(CravingModel.id)).filter(
-                CravingModel.created_at >= day_ago
-            ).scalar()
-            db_metrics["cravings_24h"] = recent_cravings or 0
-            
-            # Get average intensity
-            avg_intensity = db.query(func.avg(CravingModel.intensity)).scalar()
-            db_metrics["avg_intensity"] = round(float(avg_intensity), 2) if avg_intensity else 0
+            try:
+                craving_count = db.query(func.count(CravingModel.id)).scalar()
+                db_metrics["total_cravings"] = craving_count
+                
+                # Get cravings in the last 24 hours
+                day_ago = datetime.utcnow() - timedelta(days=1)
+                recent_cravings = db.query(func.count(CravingModel.id)).filter(
+                    CravingModel.created_at >= day_ago
+                ).scalar()
+                db_metrics["cravings_24h"] = recent_cravings or 0
+                
+                # Get average intensity
+                avg_intensity = db.query(func.avg(CravingModel.intensity)).scalar()
+                db_metrics["avg_intensity"] = round(float(avg_intensity), 2) if avg_intensity else 0
+            except Exception as e:
+                db_metrics["cravings_error"] = str(e)
+                
+            # Count voice logs
+            try:
+                voice_log_count = db.query(func.count(VoiceLogModel.id)).scalar()
+                db_metrics["total_voice_logs"] = voice_log_count
+                
+                # Count transcribed voice logs
+                transcribed_count = db.query(func.count(VoiceLogModel.id)).filter(
+                    VoiceLogModel.transcription_status == "COMPLETED"
+                ).scalar()
+                db_metrics["transcribed_voice_logs"] = transcribed_count or 0
+            except Exception as e:
+                db_metrics["voice_logs_error"] = str(e)
             
         except Exception as e:
             logger.error(f"Error collecting DB metrics: {str(e)}")
@@ -183,7 +238,7 @@ async def detailed_health_check(
     """
     Perform a detailed health check of all system components.
     
-    Checks:
+    This endpoint checks the health of various system components:
     - Database connectivity
     - File system access
     - Memory usage
@@ -191,6 +246,10 @@ async def detailed_health_check(
     
     Requires admin privileges.
     
+    Args:
+        db: Database session
+        admin_user: The admin user making the request (from dependency)
+        
     Returns:
         dict: The health status of each component
     """
@@ -260,6 +319,37 @@ async def detailed_health_check(
         health_status["components"]["memory"] = {
             "status": "unknown",
             "message": f"Memory check failed: {str(e)}"
+        }
+    
+    # Schema verification
+    try:
+        inspector = inspect(engine)
+        tables = inspector.get_table_names()
+        required_tables = ["users", "cravings", "voice_logs"]
+        missing_tables = [table for table in required_tables if table not in tables]
+        
+        if missing_tables:
+            health_status["status"] = "warning"
+            health_status["components"]["schema"] = {
+                "status": "warning",
+                "message": f"Missing tables: {', '.join(missing_tables)}",
+                "details": {
+                    "existing_tables": tables,
+                    "missing_tables": missing_tables
+                }
+            }
+        else:
+            health_status["components"]["schema"] = {
+                "status": "ok",
+                "message": "All required tables exist",
+                "details": {
+                    "tables": tables
+                }
+            }
+    except Exception as e:
+        health_status["components"]["schema"] = {
+            "status": "unknown",
+            "message": f"Schema check failed: {str(e)}"
         }
     
     return health_status

@@ -1,4 +1,4 @@
-# File: app/api/main.py (modified version)
+# Update app/api/main.py to include the new routers
 
 from fastapi import FastAPI
 from app.api.endpoints.admin import router as admin_router
