@@ -31,7 +31,7 @@ from app.core.entities.auth_schemas import (
 from app.infrastructure.auth.auth_service import AuthService
 from app.infrastructure.auth.user_manager import UserManager
 from app.infrastructure.database.session import SessionLocal
-from app.infrastructure.database.models import UserModel
+from app.infrastructure.database.models import UserModel  # your SQLAlchemy "User" model
 from app.config.settings import Settings  # optional, remove if unused
 
 # -------------------------------------------------------------------------
@@ -69,7 +69,6 @@ def register_user(payload: RegisterRequest, db: Session = Depends(get_db)):
       - Inserts user in DB
       - Returns basic user info (RegisterResponse)
     """
-    # 1. Check if user already exists
     user_manager = UserManager(db)
     existing_user = user_manager.get_user_by_email(payload.email)
     if existing_user:
@@ -78,7 +77,6 @@ def register_user(payload: RegisterRequest, db: Session = Depends(get_db)):
             detail="User with that email already exists."
         )
     
-    # 2. Create new user (hashing password inside user_manager)
     new_user = user_manager.create_user(
         email=payload.email,
         password=payload.password,
@@ -90,7 +88,6 @@ def register_user(payload: RegisterRequest, db: Session = Depends(get_db)):
             detail="Failed to create user (database error)."
         )
     
-    # 3. Return the created user info as a RegisterResponse
     return RegisterResponse(
         id=new_user.id,
         email=new_user.email,
@@ -114,17 +111,14 @@ def login_user(payload: LoginRequest, db: Session = Depends(get_db)):
     user_manager = UserManager(db)
     user = user_manager.get_user_by_email(payload.email)
     
-    # 1. If user not found or password incorrect => 401
     if not user or not user_manager.verify_password(payload.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials."
         )
     
-    # 2. Generate token with user ID & email
     auth_service = AuthService()
     token = auth_service.generate_token(user_id=user.id, email=user.email)
-    
     return TokenResponse(access_token=token)
 
 # -------------------------------------------------------------------------
