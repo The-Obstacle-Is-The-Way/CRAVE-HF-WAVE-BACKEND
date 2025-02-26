@@ -5,14 +5,13 @@ from app.core.entities.voice_log import VoiceLog
 
 class TranscriptionService:
     def __init__(self, openai_api_key: str = None):
-        # Use the provided API key or a default (ideally, load from secure settings)
+        # Use provided API key or default (ideally load from secure settings)
         self.openai_api_key = openai_api_key or "YOUR_DEFAULT_API_KEY"
 
     def transcribe_audio(self, voice_log: VoiceLog) -> str:
         """
-        Transcribe the audio file associated with the given VoiceLog.
-        
-        Uses OpenAI's new API (v1.0.0 and later) via the transcriptions.create method.
+        Transcribes the audio file located at voice_log.file_path using OpenAI's Whisper model.
+        This uses the new v1.0.0+ API call: openai.Audio.transcriptions.create.
         
         Returns:
             The transcribed text as a string.
@@ -22,11 +21,11 @@ class TranscriptionService:
         
         # Open the audio file in binary mode
         with open(voice_log.file_path, "rb") as audio_file:
-            # Call the new transcription method:
+            # Create a transcription using the new API method
             response = openai.Audio.transcriptions.create(
                 file=audio_file,
                 model="whisper-1"
             )
         
-        # The response is expected to include a "text" field with the transcript.
+        # Extract and return the transcription text from the response
         return response["text"]
