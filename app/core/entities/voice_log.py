@@ -1,4 +1,4 @@
-# crave_trinity_backend/app/core/entities/voice_log.py
+# File: app/core/entities/voice_log.py
 
 from datetime import datetime
 from typing import Optional
@@ -8,9 +8,13 @@ class VoiceLog(BaseModel):
     """
     Represents a user's voice log entry in the domain layer.
     """
-    id: Optional[int]         # DB-generated ID
-    user_id: int             # ID of the user who recorded the audio
-    file_path: str           # Where the audio file is stored (S3, local, etc.)
+
+    # Mark 'id' as optional, with a default of None.
+    # This way, Pydantic doesn't require the caller to pass an 'id'.
+    id: Optional[int] = None
+
+    user_id: int
+    file_path: str
     created_at: datetime
     transcribed_text: Optional[str] = None
     transcription_status: Optional[str] = None  # e.g. PENDING, FAILED, COMPLETED
