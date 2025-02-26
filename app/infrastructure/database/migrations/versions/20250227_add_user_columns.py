@@ -1,3 +1,4 @@
+#app/infrastructure/database/migrations/versions/20250227_add_user_columns.py
 """
 Add missing user columns to 'users' table.
 

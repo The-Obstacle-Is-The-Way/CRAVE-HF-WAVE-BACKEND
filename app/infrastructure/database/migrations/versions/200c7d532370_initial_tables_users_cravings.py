@@ -1,3 +1,4 @@
+#/app/infrastructure/database/migrations/versions/200c7d532370_initial_tables_users_cravings.py
 """
 Initial tables: users & cravings
 

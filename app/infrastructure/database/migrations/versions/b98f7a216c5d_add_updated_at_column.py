@@ -1,3 +1,4 @@
+#app/infrastructure/database/migrations/versions/b98f7a216c5d_add_updated_at_column.py
 """
 Add updated_at column to cravings
 

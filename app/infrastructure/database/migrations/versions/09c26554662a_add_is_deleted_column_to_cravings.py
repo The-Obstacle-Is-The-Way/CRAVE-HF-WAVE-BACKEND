@@ -1,3 +1,5 @@
+#app/infrastructure/database/migrations/versions/09c26554662a_add_is_deleted_column_to_cravings.py
+
 """
 Add is_deleted column to cravings
 
