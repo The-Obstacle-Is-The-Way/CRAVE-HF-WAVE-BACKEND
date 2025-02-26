@@ -9,7 +9,7 @@
 # - Ensures Alembic migrations run before starting the FastAPI app.
 # ------------------------------------------------------------------------------
 
-# Use a lightweight base image
+# Use a lightweight Python base image
 FROM python:3.11-slim
 
 # Prevent Python from writing .pyc files and enable unbuffered logs
@@ -30,33 +30,31 @@ WORKDIR /app
 RUN chown -R 1000:1000 /app  # ✅ Ensure non-root user owns the /app directory
 
 # ------------------------------------------------------------------------------
-# 3️⃣ Create a Non-Root User for Security
+# 3️⃣ Copy Application Code & Entrypoint Before Switching Users
+# ------------------------------------------------------------------------------
+COPY --chown=1000:1000 . .
+COPY entrypoint.sh /entrypoint.sh
+
+# ✅ FIX: Set permissions BEFORE switching to `appuser`
+RUN chmod +x /entrypoint.sh
+
+# ------------------------------------------------------------------------------
+# 4️⃣ Create a Non-Root User & Use Virtual Environment
 # ------------------------------------------------------------------------------
 RUN useradd --create-home --uid 1000 appuser
 USER appuser
 
-# ------------------------------------------------------------------------------
-# 4️⃣ Set Up Virtual Environment & Install Dependencies
-# ------------------------------------------------------------------------------
-RUN python -m venv /app/venv  # ✅ No more permission issues!
+# Create a virtual environment inside /app/venv
+RUN python -m venv /app/venv
 
 # Set virtual environment as default
 ENV PATH="/app/venv/bin:$PATH"
 
-# Copy only requirements.txt first (leverages Docker layer caching)
-COPY --chown=appuser:appuser requirements.txt .
-
-# Upgrade pip & install dependencies inside the virtual environment
+# ------------------------------------------------------------------------------
+# 5️⃣ Install Python Dependencies
+# ------------------------------------------------------------------------------
+COPY --chown=1000:1000 requirements.txt .
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
-
-# ------------------------------------------------------------------------------
-# 5️⃣ Copy Application Code & Set Up Entrypoint
-# ------------------------------------------------------------------------------
-COPY --chown=appuser:appuser . .
-
-# Ensure the entrypoint script is executable
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
 
 # ------------------------------------------------------------------------------
 # 6️⃣ Expose Ports & Start the Application
