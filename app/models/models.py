@@ -1,3 +1,3 @@
-# app/models/craving_model.py
+# app/models/models.py
 
 # Empty!!!!

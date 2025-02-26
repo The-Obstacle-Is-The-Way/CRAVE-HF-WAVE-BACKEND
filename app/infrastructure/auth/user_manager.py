@@ -5,7 +5,7 @@ from passlib.context import CryptContext
 
 from app.infrastructure.database.models import UserModel
 
-# For hashing passwords (pip install passlib)
+# For hashing passwords
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class UserManager:
@@ -49,4 +49,33 @@ class UserManager:
             user.is_active = False
             self.db.commit()
             self.db.refresh(user)
+        return user
+
+    # ------------------------------------------------------------------
+    # NEW METHOD FOR PARTIAL PROFILE UPDATES
+    # ------------------------------------------------------------------
+    def update_user_profile(self, user_id: int, updates: dict) -> UserModel | None:
+        """
+        Partially update a user's profile fields.
+
+        Args:
+            user_id (int): The unique ID of the user to update.
+            updates (dict): Fields to update (e.g., {"username": "NewName"}).
+
+        Returns:
+            UserModel | None: The updated user object, or None if not found.
+        """
+        user = self.db.query(UserModel).filter(UserModel.id == user_id).first()
+        if not user:
+            return None
+
+        # Whitelist only certain fields for updates:
+        allowed_fields = {"username", "display_name", "avatar_url", "email"}
+
+        for field, value in updates.items():
+            if field in allowed_fields and value is not None:
+                setattr(user, field, value)
+
+        self.db.commit()
+        self.db.refresh(user)
         return user

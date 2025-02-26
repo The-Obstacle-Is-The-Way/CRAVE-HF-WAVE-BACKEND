@@ -17,9 +17,6 @@ class CravingModel(Base):
     updated_at = Column(DateTime, default=datetime.datetime.utcnow,
                         onupdate=datetime.datetime.utcnow, nullable=False)
 
-############################
-# NEW: Add this below
-############################
 class UserModel(Base):
     __tablename__ = "users"
 
@@ -27,6 +24,8 @@ class UserModel(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
     username = Column(String, nullable=True)
+    display_name = Column(String, nullable=True)   # <--- NEW COLUMN
+    avatar_url = Column(String, nullable=True)     # <--- NEW COLUMN
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow,
                         onupdate=datetime.datetime.utcnow, nullable=False)
@@ -35,7 +34,7 @@ class UserModel(Base):
 
     def __repr__(self):
         return f"<UserModel id={self.id} email={self.email}>"
-    
+
 class VoiceLogModel(Base):
     __tablename__ = "voice_logs"
 
