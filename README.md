@@ -18,8 +18,6 @@ This repository demonstrates an end-to-end system—from initial setup and datab
 It will not offer medical predictions, diagnoses, or treatment prior to FDA SaMD approval.
 Any behavioral insights should be viewed as informational only, and users should consult a healthcare professional for medical or therapeutic guidance.
 
----
-
 ![CRAVE Architecture](docs/crave-trinity-architecture-fixed.svg)
 
 ## 🌊 Vision
