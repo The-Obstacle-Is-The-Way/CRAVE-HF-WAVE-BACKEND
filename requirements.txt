@@ -19,9 +19,11 @@ openai>=1.0.0
 langchain==0.3.19
 python-dotenv==1.0.0
 alembic==1.11.1
+passlib==1.7.4
 
 # Hugging Face & LoRA
 transformers==4.31.0
 accelerate==0.21.0
 xformers==0.0.22  # ✅ Install AFTER torch
 peft==0.4.0  # For LoRA
+
