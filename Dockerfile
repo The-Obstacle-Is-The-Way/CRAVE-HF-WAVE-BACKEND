@@ -9,10 +9,10 @@
 # - Ensures Alembic migrations run before starting the FastAPI app.
 # ------------------------------------------------------------------------------
 
-# Use a lightweight Python 3.11 base image
+# Use a lightweight base image
 FROM python:3.11-slim
 
-# Prevent Python from writing .pyc files and force unbuffered output for logs
+# Prevent Python from writing .pyc files and enable unbuffered logs
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
@@ -24,29 +24,33 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ------------------------------------------------------------------------------
-# 2️⃣ Create a Non-Root User for Security
+# 2️⃣ Set Up Application Directory & Permissions
 # ------------------------------------------------------------------------------
-RUN useradd --create-home appuser
 WORKDIR /app
+RUN chown -R 1000:1000 /app  # ✅ Ensure non-root user owns the /app directory
+
+# ------------------------------------------------------------------------------
+# 3️⃣ Create a Non-Root User for Security
+# ------------------------------------------------------------------------------
+RUN useradd --create-home --uid 1000 appuser
 USER appuser
 
 # ------------------------------------------------------------------------------
-# 3️⃣ Set Up Virtual Environment & Install Dependencies
+# 4️⃣ Set Up Virtual Environment & Install Dependencies
 # ------------------------------------------------------------------------------
-# Create a virtual environment inside /app/venv
-RUN python -m venv /app/venv
+RUN python -m venv /app/venv  # ✅ No more permission issues!
 
-# Set the virtual environment as default for running commands
+# Set virtual environment as default
 ENV PATH="/app/venv/bin:$PATH"
 
-# Copy only requirements first to optimize Docker layer caching
+# Copy only requirements.txt first (leverages Docker layer caching)
 COPY --chown=appuser:appuser requirements.txt .
 
-# Upgrade pip and install dependencies
+# Upgrade pip & install dependencies inside the virtual environment
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
 # ------------------------------------------------------------------------------
-# 4️⃣ Copy Application Code & Set Up Entrypoint
+# 5️⃣ Copy Application Code & Set Up Entrypoint
 # ------------------------------------------------------------------------------
 COPY --chown=appuser:appuser . .
 
@@ -55,9 +59,7 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # ------------------------------------------------------------------------------
-# 5️⃣ Expose Ports & Start the Application
+# 6️⃣ Expose Ports & Start the Application
 # ------------------------------------------------------------------------------
 EXPOSE 8000
-
-# Run the entrypoint script (which ensures Alembic migrations run before FastAPI)
 CMD ["/entrypoint.sh"]
