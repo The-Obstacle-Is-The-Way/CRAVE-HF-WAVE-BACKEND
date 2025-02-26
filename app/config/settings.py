@@ -1,12 +1,12 @@
-# File: app/config/settings.py
 """
 Application settings loaded from environment variables.
 
 This class consolidates all configuration settings for the CRAVE Trinity Backend.
-Sensitive values (such as API keys, database URIs, etc.) should be stored in a .env
-file which is not committed to version control.
+Sensitive values (such as API keys, database URIs, etc.) should be stored in
+Railway environment variables or a local .env file (which is not committed).
 """
 from pydantic_settings import BaseSettings
+from pydantic import Field
 
 class Settings(BaseSettings):
     # General project settings
@@ -14,13 +14,9 @@ class Settings(BaseSettings):
     ENV: str = "development"
 
     # Database connection URI.
-    # When using Docker Compose, the hostname should be the service name (e.g., "db").
     SQLALCHEMY_DATABASE_URI: str = "postgresql://postgres:password@db:5432/crave_db"
 
     # Pinecone configuration:
-    # - API key should be provided in the .env file.
-    # - The environment must match exactly what Pinecone expects (e.g., "us-east-1-aws").
-    # - The index name is the name of the index for vector storage.
     PINECONE_API_KEY: str
     PINECONE_ENV: str = "us-east-1-aws"
     PINECONE_INDEX_NAME: str = "crave-embeddings"
@@ -32,22 +28,28 @@ class Settings(BaseSettings):
     HUGGINGFACE_API_KEY: str
 
     # Llama 2 model configuration:
-    # - The model name is the Hugging Face identifier for the base Llama 2 model.
     LLAMA2_MODEL_NAME: str = "meta-llama/Llama-2-13b-chat-hf"
 
     # LoRA adapters for different user personas.
-    # These can be local paths or Hugging Face model identifiers for your LoRA adapters.
     LORA_PERSONAS: dict = {
         "NighttimeBinger": "path_or_hub/nighttime-binger-lora",
         "StressCraver": "path_or_hub/stress-craver-lora",
     }
 
+    # -------------------------------------------------------------------------
+    # JWT-Related fields (read from Railway or local .env)
+    # -------------------------------------------------------------------------
+    # Remove the default if you want to force setting them via environment vars:
+    JWT_SECRET: str = Field("PLEASE_CHANGE_ME", env="JWT_SECRET")
+    JWT_ALGORITHM: str = Field("HS256", env="JWT_ALGORITHM")
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(60, env="JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
+
     class Config:
-        # Load environment variables from a .env file in the project root.
+        # Railway or local .env
         env_file = ".env"
-        extra = "allow"  # Allows extra fields without throwing an error
+        extra = "allow"
 
 if __name__ == "__main__":
-    # Debugging: print out all settings to verify they're loaded correctly.
+    # Debug: print out all settings to verify they're loaded correctly.
     settings = Settings()
     print(settings.dict())

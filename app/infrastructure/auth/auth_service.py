@@ -4,35 +4,21 @@
 # Handles:
 #   - JWT creation and decoding
 #   - Retrieving current user from token with FastAPI dependencies
-#
-# Single Responsibility Principle (Uncle Bob):
-#   - This class deals ONLY with auth logic (tokens, user fetch).
 # =============================================================================
 
-import os
-import jwt
 from datetime import datetime, timedelta
+import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
-# -------------------------------------------------------------------------
-# Environment / Config
-# -------------------------------------------------------------------------
-JWT_SECRET = os.getenv("JWT_SECRET", "PLEASE_CHANGE_ME")
-JWT_ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60  # 1 hour, adjust as needed
-
-# -------------------------------------------------------------------------
-# Import your DB session and model
-# -------------------------------------------------------------------------
+# Load settings from the single source
+from app.config.settings import Settings
 from app.infrastructure.database.session import get_db
 from app.infrastructure.database.models import UserModel
 
-# -------------------------------------------------------------------------
-# Use OAuth2PasswordBearer to parse "Authorization: Bearer <token>"
-# in the request automatically
-# -------------------------------------------------------------------------
+settings = Settings()
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 class AuthService:
@@ -44,16 +30,16 @@ class AuthService:
         """
         Create a JWT token for the user with an expiration.
         """
-        expires_delta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expires_delta = timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
         expire = datetime.utcnow() + expires_delta
 
         payload = {
-            "sub": str(user_id),  # 'sub' is a standard claim: the user identifier
+            "sub": str(user_id),
             "email": email,
             "exp": expire,
             "iat": datetime.utcnow(),
         }
-        token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+        token = jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
         return token
 
     def get_current_user(
@@ -62,17 +48,22 @@ class AuthService:
         db: Session = Depends(get_db),
     ) -> UserModel:
         """
-        1. Decode the JWT token from the Authorization header.
-        2. Fetch the user from DB by user_id (sub).
-        3. Return a *UserModel*, raising HTTP exceptions if invalid.
+        1. Decode JWT token from "Authorization: Bearer <token>".
+        2. Fetch the user from DB by user_id in 'sub' claim.
+        3. Return *UserModel* or raise HTTPException if invalid/expired.
         """
         if not token:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Missing token in request",
             )
+
         try:
-            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+            payload = jwt.decode(
+                token,
+                settings.JWT_SECRET,
+                algorithms=[settings.JWT_ALGORITHM]
+            )
             user_id = payload.get("sub")
             if user_id is None:
                 raise HTTPException(
