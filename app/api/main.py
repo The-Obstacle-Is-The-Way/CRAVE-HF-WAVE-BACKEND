@@ -10,6 +10,7 @@ from app.api.endpoints.craving_logs import router as craving_logs_router
 from app.api.endpoints.ai_endpoints import router as ai_router
 from app.api.endpoints.search_cravings import router as search_router
 from app.api.endpoints.analytics import router as analytics_router
+from app.api.endpoints.voice_logs_endpoints import router as voice_logs_router
 
 # NEW: Import our auth endpoints
 from app.api.endpoints.auth_endpoints import router as auth_router
@@ -31,6 +32,7 @@ app.include_router(craving_logs_router, prefix="/api/cravings", tags=["Cravings"
 app.include_router(ai_router, prefix="/api", tags=["AI"])
 app.include_router(search_router, prefix="/api/cravings", tags=["Cravings"])
 app.include_router(analytics_router, prefix="/api/analytics", tags=["Analytics"])
+app.include_router(voice_logs_router, prefix="/api/voice-logs", tags=["Voice Logs"])
 
 @app.get("/")
 def root():

@@ -35,3 +35,17 @@ class UserModel(Base):
 
     def __repr__(self):
         return f"<UserModel id={self.id} email={self.email}>"
+    
+class VoiceLogModel(Base):
+    __tablename__ = "voice_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    file_path = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    transcribed_text = Column(String, nullable=True)
+    transcription_status = Column(String, nullable=True)  # e.g. PENDING, IN_PROGRESS, COMPLETED
+    is_deleted = Column(Boolean, default=False, nullable=False)
+
+    def __repr__(self):
+        return f"<VoiceLogModel id={self.id} user_id={self.user_id} file_path={self.file_path}>"
