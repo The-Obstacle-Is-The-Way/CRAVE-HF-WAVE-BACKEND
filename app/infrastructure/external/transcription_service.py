@@ -12,6 +12,8 @@ import os
 from openai import OpenAI
 from app.core.entities.voice_log import VoiceLog
 
+# Import the settings singleton instance
+from app.config.settings import settings
 
 class TranscriptionService:
     """
@@ -19,15 +21,16 @@ class TranscriptionService:
     Follows the new OpenAI v1.x+ API conventions.
     """
     
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, openai_api_key: Optional[str] = None):
         """
         Initialize the transcription service with an OpenAI API key.
         
         Args:
-            api_key: The OpenAI API key to use. If None, will attempt to use OPENAI_API_KEY
-                    environment variable or a default setting.
+            openai_api_key: Optional override for the OpenAI API key.
+                          Defaults to the value from settings if not provided.
         """
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        # Use provided key or fall back to settings
+        self.api_key = openai_api_key or settings.OPENAI_API_KEY
         self.client = OpenAI(api_key=self.api_key)
         self.default_model = "whisper-1"
     
@@ -74,6 +77,5 @@ class TranscriptionService:
             )
             return response.text
         except Exception as e:
-            # Log the error here (using a proper logger)
-            # self.logger.error(f"OpenAI transcription error: {str(e)}")
+            # TODO: Add proper logging here
             raise Exception(f"Transcription failed: {str(e)}")

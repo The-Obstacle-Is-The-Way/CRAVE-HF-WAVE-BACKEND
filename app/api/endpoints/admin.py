@@ -12,8 +12,8 @@ import alembic.command
 import logging
 import os
 
-# Import settings directly (no dependency)
-from app.config.settings import Settings
+# Import the settings singleton instance (FIX: use singleton instead of class)
+from app.config.settings import settings
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -39,8 +39,7 @@ def add_missing_column():
     """
     Directly add the missing is_deleted column to the cravings table.
     """
-    # Get database connection settings
-    settings = Settings()
+    # Use the settings singleton directly (no need to create instance)
     engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
     
     try:
@@ -69,8 +68,7 @@ def add_missing_columns():
     """
     Add any missing columns to the cravings table.
     """
-    # Get database connection settings
-    settings = Settings()
+    # Use the settings singleton directly
     engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
     
     results = {}
@@ -158,8 +156,7 @@ def verify_schema():
     """
     Verify that the database schema is correctly set up.
     """
-    # Get database connection settings
-    settings = Settings()
+    # Use the settings singleton directly
     engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
     
     try:
