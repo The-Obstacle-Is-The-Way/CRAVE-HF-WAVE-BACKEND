@@ -39,8 +39,6 @@ The world's first self-optimizing craving intelligence system—a backend powere
 | **Backend & Deployment** | **Python (FastAPI) on AWS EC2/ECS**              | Python for ML, FastAPI for async speed, AWS for scalability. |
 | **Structured Database**  | **PostgreSQL (AWS RDS)**                        | Stores craving logs, user metadata, and structured behavioral data for analytics & AI modeling. |
 
----
-
 <div align="center">
   <img src="assets/images/vertical-ai-orchestrator-fixed.svg" alt="Vertical AI Orchestration System" width="800">
 </div>
