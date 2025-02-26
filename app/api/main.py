@@ -1,4 +1,4 @@
-# File: app/api/main.py
+# File: app/api/main.py (modified version)
 
 from fastapi import FastAPI
 from app.api.endpoints.admin import router as admin_router
@@ -10,6 +10,11 @@ from app.api.endpoints.search_cravings import router as search_router
 from app.api.endpoints.analytics import router as analytics_router
 from app.api.endpoints.voice_logs_endpoints import router as voice_logs_router
 from app.api.endpoints.auth_endpoints import router as auth_router
+
+# NEW IMPORTS
+from app.api.endpoints.live_updates import router as live_updates_router
+from app.api.endpoints.admin_monitoring import router as admin_monitoring_router
+from app.api.endpoints.voice_logs_enhancement import router as voice_logs_enhancement_router
 
 # NEW: Import Base and engine to create tables as fallback.
 from app.infrastructure.database.models import Base
@@ -30,6 +35,11 @@ app.include_router(ai_router, prefix="/api", tags=["AI"])
 app.include_router(search_router, prefix="/api/cravings", tags=["Cravings"])
 app.include_router(analytics_router, prefix="/api/analytics", tags=["Analytics"])
 app.include_router(voice_logs_router, prefix="/api/voice-logs", tags=["Voice Logs"])
+
+# NEW ROUTERS
+app.include_router(live_updates_router, prefix="/api", tags=["Real-time Updates"])
+app.include_router(admin_monitoring_router, prefix="/api/admin", tags=["Admin", "Monitoring"])
+app.include_router(voice_logs_enhancement_router, prefix="/api/voice-logs", tags=["Voice Logs"])
 
 @app.get("/")
 def root():
