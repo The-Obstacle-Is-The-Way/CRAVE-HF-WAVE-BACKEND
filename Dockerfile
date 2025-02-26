@@ -1,47 +1,63 @@
-# Dockerfile
 # ------------------------------------------------------------------------------
-# A lightweight Docker image for the CRAVE Trinity Backend.
+# CRAVE Trinity Backend - Optimized Dockerfile
 #
-# This Dockerfile uses Python 3.11-slim and installs dependencies in two phases:
-# 1. Install system-level build dependencies required for compiling extensions (e.g., build-essential, ninja-build).
-# 2. Upgrade pip, install torch first, then install the rest of the Python dependencies.
-#
-# Additionally, this Dockerfile copies an entrypoint script that runs Alembic migrations
-# before starting the FastAPI application.
+# Key improvements:
+# - Uses Python 3.11-slim for a lightweight image.
+# - Installs dependencies in a virtual environment to prevent permission issues.
+# - Uses a dedicated non-root user for security.
+# - Improves build caching by copying requirements.txt before other files.
+# - Ensures Alembic migrations run before starting the FastAPI app.
 # ------------------------------------------------------------------------------
-    FROM python:3.11-slim
 
-    # Prevent Python from writing pyc files and ensure unbuffered output.
-    ENV PYTHONDONTWRITEBYTECODE=1
-    ENV PYTHONUNBUFFERED=1
-    
-    # Install system-level build dependencies.
-    RUN apt-get update && \
-        apt-get install -y build-essential ninja-build && \
-        apt-get clean && rm -rf /var/lib/apt/lists/*
-    
-    # Set the working directory inside the container.
-    WORKDIR /app
-    
-    # Copy the requirements file to leverage Docker layer caching.
-    COPY requirements.txt .
-    
-    # Upgrade pip and install torch explicitly.
-    RUN pip install --upgrade pip && \
-        pip install --no-cache-dir torch==2.0.1
-    
-    # Install the rest of the dependencies.
-    RUN pip install --no-cache-dir -r requirements.txt
-    
-    # Copy the entire application code into the container.
-    COPY . .
-    
-    # Copy the entrypoint script and ensure it's executable.
-    COPY entrypoint.sh /entrypoint.sh
-    RUN chmod +x /entrypoint.sh
-    
-    # Expose the application port.
-    EXPOSE 8000
-    
-    # Run the entrypoint script.
-    CMD ["/entrypoint.sh"]
+# Use a lightweight Python 3.11 base image
+FROM python:3.11-slim
+
+# Prevent Python from writing .pyc files and force unbuffered output for logs
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# ------------------------------------------------------------------------------
+# 1️⃣ Install System Dependencies
+# ------------------------------------------------------------------------------
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential ninja-build \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# ------------------------------------------------------------------------------
+# 2️⃣ Create a Non-Root User for Security
+# ------------------------------------------------------------------------------
+RUN useradd --create-home appuser
+WORKDIR /app
+USER appuser
+
+# ------------------------------------------------------------------------------
+# 3️⃣ Set Up Virtual Environment & Install Dependencies
+# ------------------------------------------------------------------------------
+# Create a virtual environment inside /app/venv
+RUN python -m venv /app/venv
+
+# Set the virtual environment as default for running commands
+ENV PATH="/app/venv/bin:$PATH"
+
+# Copy only requirements first to optimize Docker layer caching
+COPY --chown=appuser:appuser requirements.txt .
+
+# Upgrade pip and install dependencies
+RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+
+# ------------------------------------------------------------------------------
+# 4️⃣ Copy Application Code & Set Up Entrypoint
+# ------------------------------------------------------------------------------
+COPY --chown=appuser:appuser . .
+
+# Ensure the entrypoint script is executable
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# ------------------------------------------------------------------------------
+# 5️⃣ Expose Ports & Start the Application
+# ------------------------------------------------------------------------------
+EXPOSE 8000
+
+# Run the entrypoint script (which ensures Alembic migrations run before FastAPI)
+CMD ["/entrypoint.sh"]
