@@ -1,4 +1,4 @@
-#app/infrastructure/database/migrations/versions/20250301_add_display_name_avatar_url.py
+#app/infrastructure/database/migrations/versions/20250301_add_disp_avatar.py
 """
 Add display_name and avatar_url columns to users
 
@@ -11,7 +11,7 @@ from alembic import op
 import sqlalchemy as sa
 from typing import Sequence, Union
 
-revision: str = "20250301_add_display_name_avatar_url"
+revision: str = "20250301_add_disp_avatar"
 down_revision: Union[str, None] = "20250229_set_users_id_restart"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
