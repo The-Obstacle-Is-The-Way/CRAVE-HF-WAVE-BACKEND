@@ -1,57 +1,78 @@
-# File: app/api/endpoints/user_queries.py
+# app/api/endpoints/user_queries.py
 """
-Endpoints for updating and deleting cravings.
-Follows clean architecture with dependency injection.
-Note: These routes are defined without an extra prefix.
-They will be mounted under "/api/cravings" in the main application.
+Endpoints for querying and managing user-specific craving data.
 """
-from fastapi import APIRouter, HTTPException, Depends
+from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-# Import the repository and DB dependency.
-from app.infrastructure.database.repository import CravingRepository, get_db
+from app.infrastructure.database.repository import CravingRepository
+from app.api.dependencies import get_db, get_current_user  # Import get_db and get_current_user
+from app.infrastructure.database.models import UserModel
 
-router = APIRouter()  # Do not include '/cravings' here!
+router = APIRouter()
 
-# Pydantic model for updating a craving.
-class CravingUpdate(BaseModel):
-    description: str | None = None
-    intensity: int | None = None
-    # Add additional fields as needed.
+class Craving(BaseModel):
+    """Pydantic model for a craving."""
+    id: int
+    user_id: int
+    description: str
+    intensity: int
+    created_at: str
+    updated_at: str
 
-@router.put("/{craving_id}", tags=["Cravings"])
-async def update_craving(craving_id: int, craving_update: CravingUpdate, db: Session = Depends(get_db)):
+class CravingsResponse(BaseModel):
+    """Response model for a list of cravings."""
+    cravings: List[Craving]
+
+@router.get("/user/queries", response_model=CravingsResponse, tags=["Cravings"])
+async def get_user_cravings(
+    current_user: UserModel = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> CravingsResponse:
     """
-    Update an existing craving.
-
-    Workflow:
-      1. Retrieve the existing craving.
-      2. If not found, raise a 404 error.
-      3. Otherwise, update only the provided fields.
-      4. Return the updated craving.
+    Retrieves all cravings for the currently authenticated user.
     """
-    repository = CravingRepository(db)
-    existing = repository.get_craving_by_id(craving_id)
-    if not existing:
+    craving_repo = CravingRepository(db)
+    db_cravings = craving_repo.get_cravings_for_user(current_user.id)  #Use the current user id.
+
+    # Convert database models to Pydantic models
+    cravings = [
+        Craving(
+            id=c.id,
+            user_id=c.user_id,
+            description=c.description,
+            intensity=c.intensity,
+            created_at=c.created_at.isoformat(),  # Format DateTime as string
+            updated_at=c.updated_at.isoformat(),
+        )
+        for c in db_cravings
+    ]
+
+    return CravingsResponse(cravings=cravings)
+
+@router.delete("/user/queries/{craving_id}", tags=["Cravings"])
+async def delete_user_craving(
+    craving_id: int,
+    current_user: UserModel = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Deletes a specific craving for the authenticated user.
+    Implements a soft delete by setting 'is_deleted' to True.
+    """
+
+    craving_repo = CravingRepository(db)
+    craving = craving_repo.get_craving_by_id(craving_id)
+
+    if not craving:
         raise HTTPException(status_code=404, detail="Craving not found")
-    updated = repository.update_craving(craving_id, craving_update.dict(exclude_unset=True))
-    return updated
 
-@router.delete("/{craving_id}", tags=["Cravings"])
-async def delete_craving(craving_id: int, db: Session = Depends(get_db)):
-    """
-    Soft-delete an existing craving.
-
-    Workflow:
-      1. Retrieve the craving.
-      2. If not found, raise a 404 error.
-      3. Otherwise, mark it as deleted.
-      4. Return a confirmation message.
-    """
-    repository = CravingRepository(db)
-    existing = repository.get_craving_by_id(craving_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Craving not found")
-    repository.delete_craving(craving_id)
-    return {"detail": "Craving deleted successfully"}
+    # Ensure the craving belongs to the current user
+    if craving.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this craving")
+    
+    craving_repo.delete_craving(craving_id)
+    return {"message": f"Craving {craving_id} deleted successfully"}
