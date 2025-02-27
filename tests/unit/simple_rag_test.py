@@ -13,7 +13,7 @@ from datetime import datetime
 
 # Configuration
 BASE_URL = "https://crave-trinity-backend-production.up.railway.app"
-TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJyYWd0ZXN0X3VzZXIiLCJleHAiOjE3NDA2MzA0MTd9.CUfnNn1_5c6qZoCB1_qV09sPhb9nlWXiuBf5KxCZiis"  # Fixed token string
+TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJyYW5kb211c2VyMTIzQHJhbmRvbTEyMy5jb20iLCJ1c2VyX2lkIjoxNCwiZXhwIjoxNzQwNjc0MDU3LCJpYXQiOjE3NDA2NzA0NTcsImp0aSI6ImJmYzdmM2MyLTdiNTItNGJmNC04MTYzLTk4MTJmM2U1NzkxZiIsInR5cGUiOiJhY2Nlc3MifQ.g96RH40RE3zuQYcP2lTaIxvpXtHXodGWgR5xtQou4x0"  # Fixed token string
 
 def make_request(url, method="GET", data=None, headers=None):
     """Make an HTTP request and return the response."""
@@ -69,8 +69,8 @@ def test_ai_patterns():
     """Test AI pattern detection."""
     print("\n--- Testing AI Pattern Detection ---")
     
-    # Use your user ID here - for this test we'll use 11 based on registration
-    user_id = 11
+    # Use your user ID here - updated to 14 from the token
+    user_id = 14
     
     url = f"{BASE_URL}/api/ai/patterns?user_id={user_id}"
     response = make_request(url)
@@ -82,15 +82,37 @@ def test_ai_patterns():
     else:
         print(f"Error: {response.get('error', 'Unknown error')}")
 
+def list_cravings():
+    """List cravings for the user."""
+    print("\n--- Listing Cravings ---")
+    
+    user_id = 14
+    # Note the correct path with duplicated "cravings/cravings"
+    url = f"{BASE_URL}/api/cravings/cravings?user_id={user_id}"
+    
+    response = make_request(url)
+    
+    print(f"Status: {response.get('status')}")
+    if response.get("status") == 200:
+        cravings = response.get("body", {})
+        print(f"Cravings: {json.dumps(cravings, indent=2)}")
+        return cravings
+    else:
+        print(f"Error: {response.get('error', 'Unknown error')}")
+        return None
+
 def create_test_craving():
     """Create a test craving to have some data."""
     print("\n--- Creating Test Craving ---")
     
-    url = f"{BASE_URL}/api/cravings"
+    # Fix the URL path - note the duplicated "cravings/cravings"
+    url = f"{BASE_URL}/api/cravings/cravings"
+    user_id = 14
+    
     data = {
+        "user_id": user_id,
         "description": f"Test chocolate craving at {datetime.now().strftime('%H:%M')}",
-        "intensity": 8,
-        "notes": "Created for RAG testing"
+        "intensity": 8
     }
     
     response = make_request(url, method="POST", data=data)
@@ -139,7 +161,10 @@ def main():
     print(f"Base URL: {BASE_URL}")
     print(f"Using token: {TOKEN[:10]}...")
     
-    # First create some test data
+    # List existing cravings first
+    list_cravings()
+    
+    # Create some test data
     create_test_craving()
     
     # Test personas
