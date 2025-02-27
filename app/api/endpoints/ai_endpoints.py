@@ -95,7 +95,7 @@ async def ai_personas():
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Personas retrieval error: {exc}")
 
-@router.post("/api/ai/rag/insights", tags=["AI"], response_model=RAGResponse)
+@router.post("/ai/rag/insights", tags=["AI"], response_model=RAGResponse)
 async def rag_insights(
     request: RAGRequest,
     current_user: UserModel = Depends(get_current_user)  # Use the dependency here
@@ -126,7 +126,7 @@ async def rag_insights(
         )
 
 # For backwards compatibility with existing code
-@router.post("/api/ai/query", tags=["AI"], response_model=RAGResponse)
+@router.post("/ai/query", tags=["AI"], response_model=RAGResponse)
 async def ai_query(
     query: str,
     persona: Optional[str] = None,
