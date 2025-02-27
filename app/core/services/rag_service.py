@@ -1,16 +1,7 @@
 # File: app/core/services/rag_service.py
-"""
-Retrieval-Augmented Generation (RAG) Service for CRAVE Trinity Backend.
-
-This service implements a robust RAG pipeline that:
-1. Creates embeddings for user queries
-2. Retrieves relevant context from vector database
-3. Constructs optimized prompts with time-weighted retrieval
-4. Generates personalized responses using either base or LoRA-adapted LLMs
-"""
 
 from typing import List, Dict, Any, Optional, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 from dataclasses import dataclass
 
@@ -135,17 +126,25 @@ class RAGService:
         
         for match in search_results.get("matches", []):
             try:
-                # Extract metadata from the match
                 metadata = match.get("metadata", {})
                 created_at_str = metadata.get("created_at", "")
                 
-                # Parse timestamp
                 if created_at_str:
-                    created_at = datetime.fromisoformat(created_at_str)
+                    # Parse the string
+                    dt = datetime.fromisoformat(created_at_str)
+                    
+                    # If offset-aware, convert to UTC
+                    if dt.tzinfo is not None:
+                        dt = dt.astimezone(timezone.utc)
+                    
+                    # Then remove tzinfo to make it naive in UTC
+                    dt = dt.replace(tzinfo=None)
+                    created_at = dt
                 else:
-                    created_at = datetime.utcnow()  # Fallback
+                    # Fallback
+                    created_at = datetime.utcnow()
                 
-                # Extract craving ID from match ID (assuming match id format)
+                # Extract craving ID from match ID (assuming it's numeric)
                 try:
                     craving_id = int(match.get("id", "0"))
                 except ValueError:
@@ -208,29 +207,18 @@ class RAGService:
     ) -> str:
         """
         Construct an optimized prompt for the LLM.
-        
-        Args:
-            user_id: The user's ID
-            query: The user's question
-            retrieved_cravings: List of relevant cravings for context
-            
-        Returns:
-            A structured prompt for the LLM
         """
-        # Build context from retrieved cravings
         if not retrieved_cravings:
             context_text = "No relevant craving data found in your history."
         else:
             context_lines = []
             for i, craving in enumerate(retrieved_cravings, 1):
-                # Format date for readability
                 date_str = craving.created_at.strftime("%b %d, %Y at %I:%M %p")
                 context_lines.append(
                     f"{i}. {craving.description} (Intensity: {craving.intensity}/10, {date_str})"
                 )
             context_text = "\n".join(context_lines)
 
-        # Construct a comprehensive prompt with system instructions and context
         prompt = f"""You are CRAVE AI, a specialized assistant designed to help people understand their cravings.
 
 USER PROFILE:
@@ -254,17 +242,20 @@ YOUR RESPONSE:
 """
         return prompt
 
-# Singleton instance for application-wide use
+
+# Singleton instance
 rag_service = RAGService()
 
-# Function interface for backwards compatibility
+
 def generate_personalized_insight(
     user_id: int, 
     query: str, 
     persona: str = None, 
     top_k: int = 5
 ) -> str:
-    """Backwards-compatible function interface for the RAG service."""
+    """
+    Backwards-compatible function interface for the RAG service.
+    """
     return rag_service.generate_personalized_insight(
         user_id=user_id,
         query=query,

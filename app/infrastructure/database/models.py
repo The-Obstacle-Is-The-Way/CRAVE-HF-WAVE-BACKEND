@@ -1,4 +1,4 @@
-# File: app/infrastructure/database/models.py
+# app/infrastructure/database/models.py
 
 import datetime
 from sqlalchemy.ext.declarative import declarative_base
