@@ -54,14 +54,14 @@ def search_cravings_endpoint(
       HTTPException 500: If an error occurs during processing.
     """
     try:
-        # Obtain the repository instance.  <-- This was the problem line
-        repo = CravingRepository(db) # This line needs to be indented.
+        # Obtain the repository instance.
+        repo = CravingRepository(db)
 
-        # Execute the search; ensure the repository implements search_cravings.
-        results = repo.search_cravings(user_id, query)
+        # Execute the search.
+        results = repo.search_cravings(user_id, query) #Pass the user id and query
 
         # Convert ORM models to Pydantic models.
-        cravings_out = [CravingOut.model_validate(craving) for craving in results] #Correct
+        cravings_out = [CravingOut.model_validate(craving) for craving in results]
         return SearchResponse(cravings=cravings_out, count=len(cravings_out))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error searching cravings: {str(e)}")
