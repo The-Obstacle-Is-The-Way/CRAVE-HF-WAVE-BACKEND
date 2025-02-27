@@ -14,7 +14,7 @@ from collections import defaultdict
 from pydantic import BaseModel, ConfigDict  # Import ConfigDict
 
 # Import database dependencies
-from app.infrastructure.database.session import get_db
+from app.infrastructure.database.session import SessionLocal
 from app.infrastructure.database.models import CravingModel
 
 router = APIRouter()
@@ -87,7 +87,7 @@ async def get_user_craving_summary(
     user_id: int,
     days: Optional[int] = Query(30, description="Number of days to analyze"),
     db: Session = Depends(get_db)
-):
+) -> AnalyticsResponse: #NEW
     """Get a summary of a user's craving patterns."""
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=days)
@@ -129,7 +129,7 @@ async def get_craving_patterns(
     user_id: int,
     days: Optional[int] = Query(30, description="Number of days to analyze"),
     db: Session = Depends(get_db)
-):
+) -> PatternAnalyticsResponse: #NEW
     """Analyze patterns in a user's cravings."""
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=days)
@@ -175,12 +175,12 @@ async def get_craving_patterns(
     )
 
 
-@router.get("/user/{user_id}/time-of-day", response_model=TimeOfDayAnalyticsResponse)  # Corrected response model
+@router.get("/user/{user_id}/time-of-day", response_model=TimeOfDayAnalyticsResponse)
 async def get_time_of_day_analysis(
     user_id: int,
     days: Optional[int] = Query(30, description="Number of days to analyze"),
     db: Session = Depends(get_db)
-):
+) -> TimeOfDayAnalyticsResponse: #NEW
     """Analyze cravings by time of day."""
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=days)
@@ -249,12 +249,12 @@ async def get_time_of_day_analysis(
     )
 
 
-@router.get("/user/{user_id}/intensity", response_model=IntesityAnalyticsResponse)  # Corrected response model
+@router.get("/user/{user_id}/intensity", response_model=IntensityAnalyticsResponse)
 async def get_intensity_analysis(
     user_id: int,
     days: Optional[int] = Query(30, description="Number of days to analyze"),
     db: Session = Depends(get_db)
-):
+) -> IntensityAnalyticsResponse:
     """Analyze intensity patterns in a user's cravings."""
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=days)
@@ -272,7 +272,7 @@ async def get_intensity_analysis(
     cravings.sort(key=lambda c: c.created_at)
 
     if not cravings:
-        return IntesityAnalyticsResponse(
+        return IntensityAnalyticsResponse(
             user_id=user_id,
             period=f"Last {days} days",
             daily_averages={},  # Provide empty dict
@@ -309,7 +309,7 @@ async def get_intensity_analysis(
     else:
         insights.append("Your craving intensity has remained relatively stable.")
 
-    return IntesityAnalyticsResponse(
+    return IntensityAnalyticsResponse(
         user_id=user_id,
         period=f"Last {days} days",
         average_intensity=round(sum(c.intensity for c in cravings) / len(cravings), 1),
