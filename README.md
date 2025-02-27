@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ---
 title: Crave Wave Backend
 emoji: 👁
@@ -7,11 +6,8 @@ colorTo: green
 sdk: docker
 pinned: false
 license: bigcode-openrail-m
-short_description: crave-wave-backend
 ---
 
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
-=======
 # 🌊 CRAVE WAVE (Trinity Backend): Vertical AI Optimization for Craving Intelligence
 
 ## 🌟 Overview  
@@ -494,4 +490,3 @@ Any behavioral insights should be viewed as informational only, and users should
 
 This project is licensed under the **MIT License**.  
 > CRAVE: Because understanding your cravings shouldn't be complicated 🍫
->>>>>>> github/main
