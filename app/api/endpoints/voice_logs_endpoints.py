@@ -69,7 +69,7 @@ async def create_voice_log(
         audio_bytes=audio_bytes
     )
 
-    return VoiceLogOut(**voice_log.dict())
+    return VoiceLogOut(model_config = ConfigDict(from_attributes=True), **voice_log.dict())
 
 
 @router.post("/{voice_log_id}/transcribe", response_model=VoiceLogOut)
@@ -113,7 +113,7 @@ def transcribe_voice_log(
     # Mark as completed
     completed_log = service.complete_transcription(voice_log_id, transcription_text)
 
-    return VoiceLogOut(**completed_log.dict()) if completed_log else None
+    return VoiceLogOut(model_config = ConfigDict(from_attributes=True), **completed_log.dict()) if completed_log else None
 
 
 @router.get("/{voice_log_id}/transcript")
@@ -135,4 +135,45 @@ def get_transcript(
         raise HTTPException(status_code=404, detail="Voice log not found or inaccessible.")
 
     return {
-        "voice_log_id": voice_log.id
+        "voice_log_id": voice_log.id,
+        "transcribed_text": voice_log.transcribed_text,
+        "transcription_status": voice_log.transcription_status
+    }
+
+
+
+@router.get("/", response_model=list[VoiceLogOut])
+def list_voice_logs(
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(AuthService().get_current_user),
+):
+    """
+    GET /api/voice-logs/
+    --------------------
+    Returns a list of all non-deleted voice logs belonging to the current user.
+    """
+    repo = VoiceLogsRepository(db)
+    logs = repo.list_by_user(current_user.id)
+    return [VoiceLogOut(model_config = ConfigDict(from_attributes=True), **log.dict()) for log in logs]
+
+
+@router.delete("/{voice_log_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_voice_log(
+    voice_log_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(AuthService().get_current_user),
+):
+    """
+    DELETE /api/voice-logs/{voice_log_id}
+    -------------------------------------
+    Soft-delete a voice log if it belongs to the current user.
+    """
+    repo = VoiceLogsRepository(db)
+    voice_log = repo.get_by_id(voice_log_id)
+    if not voice_log or voice_log.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Voice log not found or inaccessible.")
+
+    success = repo.soft_delete(voice_log_id)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to delete voice log.")
+    return  # 204 No Content
