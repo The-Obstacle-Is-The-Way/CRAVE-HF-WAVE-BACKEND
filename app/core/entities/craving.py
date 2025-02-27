@@ -10,9 +10,10 @@ and timestamp. The model is configured to work with ORM objects.
 
 from datetime import datetime
 from pydantic import BaseModel
+from typing import Optional
 
 class Craving(BaseModel):
-    id: int
+    id: Optional[int] = None
     user_id: int
     description: str
     intensity: int

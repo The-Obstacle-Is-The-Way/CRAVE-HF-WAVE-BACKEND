@@ -1,10 +1,9 @@
-# app/infrastructure/database/repository.py
 """
 Data access layer using SQLAlchemy, providing repository classes for each model.
 """
-
 from sqlalchemy.orm import Session
-from .models import CravingModel, UserModel, VoiceLogModel  # Import your models
+from sqlalchemy import func
+from .models import CravingModel, UserModel, VoiceLogModel
 from typing import List, Optional
 
 
@@ -17,21 +16,43 @@ class CravingRepository:
     def get_craving_by_id(self, craving_id: int) -> Optional[CravingModel]:
         """Retrieves a craving by its ID."""
         return (
-            self.db.query(CravingModel).filter(CravingModel.id == craving_id).first()
+            self.db.query(CravingModel)
+            .filter(CravingModel.id == craving_id)
+            .first()
         )
 
-    def get_cravings_for_user(self, user_id: int) -> List[CravingModel]:
-        """Retrieves all cravings for a given user, excluding deleted ones."""
+    def get_cravings_for_user(
+        self, 
+        user_id: int, 
+        skip: int = 0, 
+        limit: int = 100
+    ) -> List[CravingModel]:
+        """
+        Retrieves all cravings for a given user, excluding deleted ones,
+        and applies pagination with skip/limit.
+        """
         return (
             self.db.query(CravingModel)
             .filter(CravingModel.user_id == user_id, CravingModel.is_deleted == False)
+            .offset(skip)
+            .limit(limit)
             .all()
+        )
+
+    def count_cravings_for_user(self, user_id: int) -> int:
+        """Counts all non-deleted cravings for a given user."""
+        return (
+            self.db.query(func.count(CravingModel.id))
+            .filter(CravingModel.user_id == user_id, CravingModel.is_deleted == False)
+            .scalar()
         )
 
     def create_craving(self, user_id: int, description: str, intensity: int) -> CravingModel:
         """Creates a new craving."""
         db_craving = CravingModel(
-            user_id=user_id, description=description, intensity=intensity
+            user_id=user_id, 
+            description=description, 
+            intensity=intensity
         )
         self.db.add(db_craving)
         self.db.commit()
@@ -41,12 +62,29 @@ class CravingRepository:
     def delete_craving(self, craving_id: int):
         """Marks a craving as deleted (soft delete)."""
         db_craving = (
-            self.db.query(CravingModel).filter(CravingModel.id == craving_id).first()
+            self.db.query(CravingModel)
+            .filter(CravingModel.id == craving_id)
+            .first()
         )
         if db_craving:
             db_craving.is_deleted = True
             self.db.commit()
-            self.db.refresh(db_craving) #Important to refresh
+            self.db.refresh(db_craving)
+
+    def search_cravings(self, user_id: int, query_text: str) -> List[CravingModel]:
+        """
+        Performs a simple text search on the description column, for the given user,
+        ignoring deleted cravings.
+        """
+        return (
+            self.db.query(CravingModel)
+            .filter(
+                CravingModel.user_id == user_id,
+                CravingModel.is_deleted == False,
+                CravingModel.description.ilike(f"%{query_text}%")
+            )
+            .all()
+        )
 
 
 class UserRepository:
@@ -111,7 +149,9 @@ class VoiceLogRepository:
     def get_voice_log_by_id(self, voice_log_id: int) -> Optional[VoiceLogModel]:
         """Retrieves a voice log by its ID."""
         return (
-            self.db.query(VoiceLogModel).filter(VoiceLogModel.id == voice_log_id).first()
+            self.db.query(VoiceLogModel)
+            .filter(VoiceLogModel.id == voice_log_id)
+            .first()
         )
 
     def get_voice_logs_by_user(self, user_id: int) -> List[VoiceLogModel]:
