@@ -5,7 +5,7 @@ Endpoints for querying and managing user-specific craving data.
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict #NEW, import ConfigDict
 from sqlalchemy.orm import Session
 
 from app.infrastructure.database.repository import CravingRepository
@@ -22,13 +22,13 @@ class Craving(BaseModel):
     intensity: int
     created_at: str
     updated_at: str
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True) #NEW
 
 
 class CravingsResponse(BaseModel):
     """Response model for a list of cravings."""
     cravings: List[Craving]
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True) #NEW
 
 
 @router.get("/user/queries", response_model=CravingsResponse, tags=["Cravings"])
@@ -77,6 +77,6 @@ async def delete_user_craving(
     # Ensure the craving belongs to the current user
     if craving.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to delete this craving")
-    
+
     craving_repo.delete_craving(craving_id)
     return {"message": f"Craving {craving_id} deleted successfully"}
