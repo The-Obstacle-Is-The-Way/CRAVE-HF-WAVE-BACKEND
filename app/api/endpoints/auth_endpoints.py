@@ -23,6 +23,7 @@ from app.api.dependencies import (
 )  # Centralized deps
 from app.infrastructure.database.models import UserModel  # User model
 from app.config.settings import settings  # Settings
+from app.infrastructure.database.repository import UserRepository  # Add this import!
 
 router = APIRouter()
 
