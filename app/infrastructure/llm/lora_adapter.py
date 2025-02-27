@@ -1,4 +1,5 @@
 # File: app/infrastructure/llm/lora_adapter.py
+
 import logging
 import os
 from typing import Tuple, Dict, List, Optional
@@ -6,7 +7,8 @@ import threading
 import time
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, PeftModel
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from peft import PeftModel  # <--- NOTE: Import from peft
 from app.config.settings import settings
 from app.infrastructure.llm.llama2_adapter import Llama2Adapter
 
@@ -54,9 +56,8 @@ class LoRAAdapterManager:
                 adapter_model = PeftModel.from_pretrained(
                     base_model,
                     adapter_path,
-                    # CPU only
                     torch_dtype=torch.float32,
-                    device_map="auto",   # lands on CPU if no GPU
+                    device_map="cpu",  # <--- We can explicitly force CPU here
                     use_auth_token=settings.HF_AUTH_TOKEN
                 )
                 cls._adapter_cache[adapter_path] = adapter_model
@@ -115,7 +116,8 @@ class LoRAAdapterManager:
         """Clear the adapter cache to free up memory (if needed)."""
         with cls._model_lock:
             cls._adapter_cache.clear()
-            torch.cuda.empty_cache()  # no-op on CPU
+            # No-op if CPU only, but won't hurt:
+            torch.cuda.empty_cache()
             logger.info("Adapter cache cleared")
 
     @classmethod
