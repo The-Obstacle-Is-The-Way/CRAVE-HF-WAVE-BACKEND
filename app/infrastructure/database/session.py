@@ -1,12 +1,19 @@
-"""
-SQLAlchemy session configuration.
-"""
+# ─────────────────────────────────────────────────────────────────────────────
+# FILE: app/infrastructure/database/session.py
+#
+# Purpose:
+#   - Sets up the SQLAlchemy engine with the DB URL from pydantic settings.
+#   - Provides a session factory `SessionLocal`.
+# ─────────────────────────────────────────────────────────────────────────────
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.config.settings import settings  # Import the settings instance
+from app.config.settings import settings
 
-# Use the same name: settings.SQLALCHEMY_DATABASE_URI
-engine = create_engine(settings.SQLALCHEMY_DATABASE_URI, pool_pre_ping=True)
+engine = create_engine(
+    settings.SQLALCHEMY_DATABASE_URI,
+    pool_pre_ping=True
+)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def get_db():
