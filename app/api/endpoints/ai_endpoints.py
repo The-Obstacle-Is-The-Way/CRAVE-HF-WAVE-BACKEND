@@ -2,14 +2,41 @@
 """
 AI-powered endpoints that generate insights, detect patterns,
 and list available craving personas.
+
+Enhanced with RAG functionality for personalized insights based on user queries.
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from typing import Optional, List
+from pydantic import BaseModel
+
 from app.core.use_cases.generate_craving_insights import generate_insights
 from app.core.services.analytics_service import analyze_patterns, list_personas
+from app.core.services.rag_service import rag_service
+from app.infrastructure.llm.lora_adapter import LoRAAdapterManager
+from app.api.dependencies import get_current_user
 
 router = APIRouter()
 
-@router.post("/api/ai/insights", tags=["AI"])
+# Response models
+class InsightResponse(BaseModel):
+    insights: str
+
+class PatternsResponse(BaseModel):
+    patterns: dict
+
+class PersonasResponse(BaseModel):
+    personas: List[str]
+
+class RAGRequest(BaseModel):
+    query: str
+    persona: Optional[str] = None
+    top_k: Optional[int] = 5
+    time_weighted: Optional[bool] = True
+
+class RAGResponse(BaseModel):
+    answer: str
+
+@router.post("/api/ai/insights", tags=["AI"], response_model=InsightResponse)
 async def ai_insights(user_id: int, query: str | None = None):
     """
     Generate AI insights based on a user's craving history.
@@ -27,7 +54,7 @@ async def ai_insights(user_id: int, query: str | None = None):
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"AI insights error: {exc}")
 
-@router.get("/api/ai/patterns", tags=["AI"])
+@router.get("/api/ai/patterns", tags=["AI"], response_model=PatternsResponse)
 async def ai_patterns(user_id: int):
     """
     Retrieve pattern analysis of the user's cravings.
@@ -44,7 +71,7 @@ async def ai_patterns(user_id: int):
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Pattern analysis error: {exc}")
 
-@router.get("/api/ai/personas", tags=["AI"])
+@router.get("/api/ai/personas", tags=["AI"], response_model=PersonasResponse)
 async def ai_personas():
     """
     List available craving personas (LoRA fine-tuned).
@@ -53,7 +80,79 @@ async def ai_personas():
         dict: A list of available AI craving personas.
     """
     try:
-        personas = list_personas()
+        # Use the LoRAAdapterManager to get actual available personas
+        # Falls back to analytics service if not available
+        try:
+            personas = LoRAAdapterManager.list_available_personas()
+        except:
+            personas = list_personas()
+            
         return {"personas": personas}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Personas retrieval error: {exc}")
+
+@router.post("/api/ai/rag/insights", tags=["AI"], response_model=RAGResponse)
+async def rag_insights(
+    request: RAGRequest,
+    user_id: int = Depends(get_current_user)
+):
+    """
+    Generate personalized insights using RAG (Retrieval-Augmented Generation).
+    
+    This endpoint uses vector search to find relevant cravings in the user's history,
+    then generates tailored insights based on those cravings.
+    
+    Args:
+        request: RAG request containing query and options
+        user_id: User ID from authentication
+        
+    Returns:
+        Personalized answer based on the user's craving history
+    """
+    try:
+        answer = rag_service.generate_personalized_insight(
+            user_id=user_id,
+            query=request.query,
+            persona=request.persona,
+            top_k=request.top_k,
+            time_weighted=request.time_weighted
+        )
+        return {"answer": answer}
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"RAG generation failed: {str(exc)}"
+        )
+        
+# For backwards compatibility with existing code
+@router.post("/api/ai/query", tags=["AI"], response_model=RAGResponse)
+async def ai_query(
+    user_id: int,
+    query: str,
+    persona: Optional[str] = None
+):
+    """
+    Legacy endpoint for querying the AI about cravings.
+    
+    This now uses the RAG system under the hood.
+    
+    Args:
+        user_id: The user's ID
+        query: User question about cravings
+        persona: Optional LoRA persona to use
+        
+    Returns:
+        AI-generated answer
+    """
+    try:
+        answer = rag_service.generate_personalized_insight(
+            user_id=user_id,
+            query=query,
+            persona=persona
+        )
+        return {"answer": answer}
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"AI query failed: {str(exc)}"
+        )
