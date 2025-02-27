@@ -8,7 +8,7 @@ the repository and use-case layers for data processing.
 from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Path
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, ConfigDict
 from sqlalchemy.orm import Session
 
 # Import dependencies and use cases
@@ -46,6 +46,8 @@ class CravingResponse(BaseModel):
     description: str = Field(..., description="Description of the craving")
     intensity: int = Field(..., description="Intensity of the craving")
     created_at: datetime = Field(..., description="Timestamp when the craving was created")
+    model_config = ConfigDict(from_attributes=True)
+
     
 class CravingListResponse(BaseModel):
     """
@@ -53,6 +55,8 @@ class CravingListResponse(BaseModel):
     """
     cravings: List[CravingResponse]
     count: int = Field(..., description="Total number of cravings")
+    model_config = ConfigDict(from_attributes=True)
+
 
 class SearchResult(BaseModel):
     """
@@ -63,6 +67,8 @@ class SearchResult(BaseModel):
     intensity: int
     created_at: datetime
     similarity: float = Field(..., description="Similarity score to the query")
+    model_config = ConfigDict(from_attributes=True)
+
 
 class SearchResponse(BaseModel):
     """
@@ -71,6 +77,8 @@ class SearchResponse(BaseModel):
     results: List[SearchResult]
     query: str
     count: int
+    model_config = ConfigDict(from_attributes=True)
+
 
 # =============================================================================
 # API Endpoints
@@ -145,8 +153,8 @@ async def list_cravings(
     """
     try:
         repo = CravingRepository(db)
-        cravings = repo.get_cravings_by_user(user_id, skip, limit)
-        count = repo.count_cravings_by_user(user_id)
+        cravings = repo.get_cravings_for_user(user_id, skip, limit)
+        count = repo.count_cravings_for_user(user_id)
         return CravingListResponse(
             cravings=[CravingResponse(**c.__dict__) for c in cravings],
             count=count
@@ -169,7 +177,7 @@ async def get_craving(
     """
     try:
         repo = CravingRepository(db)
-        craving = repo.get_craving(craving_id)
+        craving = repo.get_craving_by_id(craving_id)
         if not craving:
             raise HTTPException(status_code=404, detail=f"Craving with ID {craving_id} not found")
         return CravingResponse(**craving.__dict__)

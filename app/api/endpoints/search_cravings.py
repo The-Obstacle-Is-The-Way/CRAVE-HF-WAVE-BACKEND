@@ -10,10 +10,11 @@ It exposes a GET route at /api/cravings/search which:
 """
 
 from fastapi import APIRouter, HTTPException, Depends, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 from datetime import datetime
-from app.api.dependencies import get_db, get_craving_repository
+from app.api.dependencies import get_db, get_craving_repository, get_user_repository
+from app.infrastructure.database.repository import CravingRepository #NEW
 
 # Define a Pydantic model for outputting a craving record.
 class CravingOut(BaseModel):
@@ -22,14 +23,15 @@ class CravingOut(BaseModel):
     description: str = Field(..., description="Text description of the craving")
     intensity: int = Field(..., description="Intensity rating of the craving")
     created_at: datetime = Field(..., description="Timestamp when the craving was logged")
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        from_attributes = True  # Pydantic v2 setting for ORM compatibility
 
 # Define the response model for a search request.
 class SearchResponse(BaseModel):
     cravings: List[CravingOut] = Field(..., description="List of cravings matching the search query")
     count: int = Field(..., description="Total number of matching cravings")
+    model_config = ConfigDict(from_attributes=True)
+
 
 # Initialize the router.
 router = APIRouter()
@@ -53,14 +55,4 @@ def search_cravings_endpoint(
       HTTPException 500: If an error occurs during processing.
     """
     try:
-        # Obtain the repository instance.
-        repo = get_craving_repository(db)
-        
-        # Execute the search; ensure the repository implements search_cravings.
-        results = repo.search_cravings(query)
-        
-        # Convert ORM models to Pydantic models.
-        cravings_out = [CravingOut.from_orm(craving) for craving in results]
-        return SearchResponse(cravings=cravings_out, count=len(cravings_out))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error searching cravings: {str(e)}")
+        # Obtain the repository instance
