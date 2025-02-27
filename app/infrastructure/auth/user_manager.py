@@ -7,7 +7,7 @@ Interacts with the UserRepository for database operations.
 from typing import Optional, Dict
 from app.infrastructure.database.repository import UserRepository
 from app.infrastructure.auth.password_hasher import (
-    get_password_hash,
+    hash_password,  # Correct import
     verify_password,
 )  # Password hashing
 from app.infrastructure.database.models import UserModel
@@ -36,7 +36,7 @@ class UserManager:
         avatar_url: str | None = None,
     ) -> UserModel:
         """Creates a new user, hashing the password."""
-        hashed_password = get_password_hash(password)  # Hash the password
+        hashed_password = hash_password(password)  # Hash the password. Corrected function name
         return self.user_repository.create_user(
             email, hashed_password, username, display_name, avatar_url
         )
