@@ -1,0 +1,38 @@
+# First, install torch manually to prevent xformers from breaking
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.0.1
+
+# Core dependencies
+fastapi==0.100.0
+uvicorn==0.23.0
+pydantic==2.10.6
+pydantic-settings==2.2.1
+SQLAlchemy==2.0.17
+psycopg2-binary==2.9.10
+
+# Testing and utility
+pytest==7.3.1
+requests==2.31.0
+python-dotenv==1.0.0
+alembic==1.11.1
+
+# Authentication and security
+passlib[bcrypt]==1.7.4
+PyJWT==2.8.0
+email-validator>=2.0.0
+python-multipart==0.0.5
+python-jose[cryptography]==3.3.0
+
+# External integrations
+pinecone>=3.0.0
+protobuf>=4.21.0
+grpcio>=1.44.0
+googleapis-common-protos>=1.56.0  # Added for google.api
+openai>=1.2.0
+langchain==0.3.19
+
+# Hugging Face & LoRA
+transformers==4.31.0
+accelerate==0.21.0
+xformers==0.0.22  # Install AFTER torch
+peft==0.4.0  # For LoRA
