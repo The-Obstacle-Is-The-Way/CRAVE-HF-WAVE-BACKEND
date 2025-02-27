@@ -1,10 +1,4 @@
-# File: app/api/endpoints/ai_endpoints.py
-"""
-AI-powered endpoints that generate insights, detect patterns,
-and list available craving personas.
-
-Enhanced with RAG functionality for personalized insights based on user queries.
-"""
+# app/api/endpoints/ai_endpoints.py
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional, List
 from pydantic import BaseModel
@@ -13,11 +7,14 @@ from app.core.use_cases.generate_craving_insights import generate_insights
 from app.core.services.analytics_service import analyze_patterns, list_personas
 from app.core.services.rag_service import rag_service
 from app.infrastructure.llm.lora_adapter import LoRAAdapterManager
-from app.api.dependencies import get_current_user
+from app.api.dependencies import get_current_user  # Correct import
+from app.core.entities.user import User  # Import User entity (if you have one)
+from app.infrastructure.database.models import UserModel
 
 router = APIRouter()
 
-# Response models
+# ... (rest of your response models) ...
+
 class InsightResponse(BaseModel):
     insights: str
 
@@ -37,7 +34,7 @@ class RAGResponse(BaseModel):
     answer: str
 
 @router.post("/api/ai/insights", tags=["AI"], response_model=InsightResponse)
-async def ai_insights(user_id: int, query: str | None = None):
+async def ai_insights(user_id: int, query: str | None = None): # No longer using Depends here for user_id.  We'll get it from get_current_user
     """
     Generate AI insights based on a user's craving history.
 
@@ -55,7 +52,7 @@ async def ai_insights(user_id: int, query: str | None = None):
         raise HTTPException(status_code=500, detail=f"AI insights error: {exc}")
 
 @router.get("/api/ai/patterns", tags=["AI"], response_model=PatternsResponse)
-async def ai_patterns(user_id: int):
+async def ai_patterns(user_id: int): # No longer using Depends here.
     """
     Retrieve pattern analysis of the user's cravings.
 
@@ -94,24 +91,21 @@ async def ai_personas():
 @router.post("/api/ai/rag/insights", tags=["AI"], response_model=RAGResponse)
 async def rag_insights(
     request: RAGRequest,
-    user_id: int = Depends(get_current_user)
+    current_user: UserModel = Depends(get_current_user)  # Use the dependency here
 ):
     """
     Generate personalized insights using RAG (Retrieval-Augmented Generation).
-    
-    This endpoint uses vector search to find relevant cravings in the user's history,
-    then generates tailored insights based on those cravings.
-    
+
     Args:
         request: RAG request containing query and options
-        user_id: User ID from authentication
-        
+        current_user: User object from authentication
+
     Returns:
         Personalized answer based on the user's craving history
     """
     try:
         answer = rag_service.generate_personalized_insight(
-            user_id=user_id,
+            user_id=current_user.id,  # Use current_user.id
             query=request.query,
             persona=request.persona,
             top_k=request.top_k,
@@ -120,33 +114,31 @@ async def rag_insights(
         return {"answer": answer}
     except Exception as exc:
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail=f"RAG generation failed: {str(exc)}"
         )
-        
+
 # For backwards compatibility with existing code
 @router.post("/api/ai/query", tags=["AI"], response_model=RAGResponse)
 async def ai_query(
-    user_id: int,
     query: str,
-    persona: Optional[str] = None
+    persona: Optional[str] = None,
+    current_user: UserModel = Depends(get_current_user) # Use dependency here
 ):
     """
     Legacy endpoint for querying the AI about cravings.
-    
-    This now uses the RAG system under the hood.
-    
+
     Args:
-        user_id: The user's ID
         query: User question about cravings
         persona: Optional LoRA persona to use
-        
+        current_user: User object from authentication
+
     Returns:
         AI-generated answer
     """
     try:
         answer = rag_service.generate_personalized_insight(
-            user_id=user_id,
+            user_id=current_user.id,  # Use current_user.id
             query=query,
             persona=persona
         )

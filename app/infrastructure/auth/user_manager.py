@@ -1,81 +1,72 @@
-# File: app/infrastructure/auth/user_manager.py
+# app/infrastructure/auth/user_manager.py
+"""
+Handles user-related business logic, including password hashing and verification.
+Interacts with the UserRepository for database operations.
+"""
 
-from sqlalchemy.orm import Session
-from passlib.context import CryptContext
-
+from typing import Optional, Dict
+from app.infrastructure.database.repository import UserRepository
+from app.infrastructure.auth.password_hasher import (
+    get_password_hash,
+    verify_password,
+)  # Password hashing
 from app.infrastructure.database.models import UserModel
 
-# For hashing passwords
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class UserManager:
-    """
-    Manages user retrieval and creation in the DB, along with password hashing.
-    """
+    """Manages user operations, delegating data access to UserRepository."""
 
-    def __init__(self, db: Session):
-        self.db = db
+    def __init__(self, user_repository: UserRepository):
+        self.user_repository = user_repository
 
-    def get_user_by_email(self, email: str) -> UserModel | None:
-        return self.db.query(UserModel).filter(UserModel.email == email).first()
+    def get_user_by_email(self, email: str) -> Optional[UserModel]:
+        """Retrieves a user by their email address."""
+        return self.user_repository.get_by_email(email)
 
-    def create_user(self, email: str, password: str, username: str | None = None) -> UserModel:
-        """
-        Create a new user with hashed password, return the UserModel object.
-        """
-        hashed_pw = self.hash_password(password)
-        new_user = UserModel(
-            email=email,
-            password_hash=hashed_pw,
-            username=username,
+    def get_user_by_username(self, username: str) -> Optional[UserModel]:
+        """Retrieves a user by their username."""
+        return self.user_repository.get_by_username(username)
+
+    def create_user(
+        self,
+        email: str,
+        password: str,
+        username: str,
+        display_name: str | None = None,
+        avatar_url: str | None = None,
+    ) -> UserModel:
+        """Creates a new user, hashing the password."""
+        hashed_password = get_password_hash(password)  # Hash the password
+        return self.user_repository.create_user(
+            email, hashed_password, username, display_name, avatar_url
         )
-        self.db.add(new_user)
-        self.db.commit()
-        self.db.refresh(new_user)
-        return new_user
-
-    def hash_password(self, raw_password: str) -> str:
-        """Hash plaintext password using passlib."""
-        return pwd_context.hash(raw_password)
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
-        """Verify that a plain password matches the stored hashed password."""
-        return pwd_context.verify(plain_password, hashed_password)
+        """Verifies a plain password against a hashed password."""
+        return verify_password(plain_password, hashed_password)
 
-    def deactivate_user(self, user_id: int):
-        """Mark a user as inactive."""
-        user = self.db.query(UserModel).filter(UserModel.id == user_id).first()
+    def deactivate_user(self, user_id: int) -> UserModel | None:
+        """Deactivates a user (sets is_active to False)."""
+        user = self.user_repository.get_by_id(user_id)
         if user:
             user.is_active = False
-            self.db.commit()
-            self.db.refresh(user)
+            self.user_repository.db.commit()
+            self.user_repository.db.refresh(user)
         return user
 
-    # ------------------------------------------------------------------
-    # NEW METHOD FOR PARTIAL PROFILE UPDATES
-    # ------------------------------------------------------------------
-    def update_user_profile(self, user_id: int, updates: dict) -> UserModel | None:
-        """
-        Partially update a user's profile fields.
-
-        Args:
-            user_id (int): The unique ID of the user to update.
-            updates (dict): Fields to update (e.g., {"username": "NewName"}).
-
-        Returns:
-            UserModel | None: The updated user object, or None if not found.
-        """
-        user = self.db.query(UserModel).filter(UserModel.id == user_id).first()
+    def update_user_profile(self, user_id: int, updates: Dict) -> UserModel | None:
+        """Partially updates a user's profile."""
+        user = self.user_repository.get_by_id(user_id)
         if not user:
             return None
 
-        # Whitelist only certain fields for updates:
+        # Whitelist allowed fields (important for security)
         allowed_fields = {"username", "display_name", "avatar_url", "email"}
 
         for field, value in updates.items():
             if field in allowed_fields and value is not None:
-                setattr(user, field, value)
+                setattr(user, field, value)  # Update the attribute
 
-        self.db.commit()
-        self.db.refresh(user)
+        self.user_repository.db.commit()
+        self.user_repository.db.refresh(user)
         return user

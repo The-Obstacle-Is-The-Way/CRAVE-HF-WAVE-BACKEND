@@ -1,58 +1,48 @@
-# File: app/infrastructure/database/repository.py
+# app/infrastructure/database/repository.py
 """
-Repository class implementing CRUD operations for cravings.
-Includes get_craving_by_id, update_craving, and delete_craving methods.
+Data access layer using SQLAlchemy, providing repository classes for each model.
 """
+
 from sqlalchemy.orm import Session
-# Import the CravingModel from the source-of-truth.
-from app.infrastructure.database.models import CravingModel  
+from .models import CravingModel, UserModel, VoiceLogModel
+from typing import List, Optional
+
 
 class CravingRepository:
+    """Repository for CravingModel."""
+
     def __init__(self, db: Session):
         self.db = db
 
-    def get_craving_by_id(self, craving_id: int) -> CravingModel | None:
-        """
-        Retrieve a craving by ID, ensuring it's not marked as deleted.
-        """
-        return self.db.query(CravingModel).filter(
-            CravingModel.id == craving_id,
-            CravingModel.is_deleted == False
-        ).first()
+    def get_craving_by_id(self, craving_id: int) -> Optional[CravingModel]:
+        """Retrieves a craving by its ID."""
+        return (
+            self.db.query(CravingModel).filter(CravingModel.id == craving_id).first()
+        )
 
-    def update_craving(self, craving_id: int, update_data: dict) -> CravingModel | None:
-        """
-        Update the specified fields of a craving.
-        """
-        craving = self.get_craving_by_id(craving_id)
-        if not craving:
-            return None
-        for key, value in update_data.items():
-            setattr(craving, key, value)
+    def get_cravings_for_user(self, user_id: int) -> List[CravingModel]:
+        """Retrieves all cravings for a given user, excluding deleted ones."""
+        return (
+            self.db.query(CravingModel)
+            .filter(CravingModel.user_id == user_id, CravingModel.is_deleted == False)
+            .all()
+        )
+
+    def create_craving(self, user_id: int, description: str, intensity: int) -> CravingModel:
+        """Creates a new craving."""
+        db_craving = CravingModel(
+            user_id=user_id, description=description, intensity=intensity
+        )
+        self.db.add(db_craving)
         self.db.commit()
-        self.db.refresh(craving)
-        return craving
+        self.db.refresh(db_craving)
+        return db_craving
 
-    def delete_craving(self, craving_id: int) -> CravingModel | None:
-        """
-        Soft-delete a craving by setting its is_deleted flag to True.
-        """
-        craving = self.get_craving_by_id(craving_id)
-        if not craving:
-            return None
-        craving.is_deleted = True  # Soft delete
-        self.db.commit()
-        return craving
-
-# Dependency to provide a database session.
-from app.infrastructure.database.session import SessionLocal  # Adjust based on your project structure
-
-def get_db():
-    """
-    Provides a SQLAlchemy session.
-    """
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+    def delete_craving(self, craving_id: int):
+        """Marks a craving as deleted (soft delete)."""
+        db_craving = (
+            self.db.query(CravingModel).filter(CravingModel.id == craving_id).first()
+        )
+        if db_craving:
+            db_craving.is_deleted = True
+            self.db.commit()

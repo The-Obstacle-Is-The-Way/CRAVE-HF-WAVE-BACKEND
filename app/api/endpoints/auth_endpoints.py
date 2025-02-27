@@ -1,133 +1,142 @@
-# =============================================================================
-# File: app/api/endpoints/auth_endpoints.py
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Handles user registration, login (JWT issuance), profile fetching, and
-# token refresh. Depends on schemas from app.core.entities.auth_schemas,
-# and services from app.infrastructure.
-# =============================================================================
+# app/api/endpoints/auth_endpoints.py
+"""
+Authentication endpoints for user registration, login (JWT issuance), and profile management.
+"""
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm  # Use the built-in form
 from sqlalchemy.orm import Session
 
 from app.core.entities.auth_schemas import (
     RegisterRequest,
     RegisterResponse,
-    LoginRequest,
-    TokenResponse,
+    TokenResponse,  # Response model for token
     UserResponse,
-    ProfileUpdate   # <--- IMPORT THE NEW SCHEMA
+    ProfileUpdate,
 )
-from app.infrastructure.auth.auth_service import AuthService
-from app.infrastructure.auth.user_manager import UserManager
-from app.infrastructure.database.session import SessionLocal
-from app.infrastructure.database.models import UserModel
-from app.config.settings import Settings
+from app.infrastructure.auth.user_manager import UserManager  # User management logic
+from app.infrastructure.auth.jwt_handler import create_access_token  # JWT creation
+from app.api.dependencies import (
+    get_db,
+    get_current_user,
+    get_user_repository,
+)  # Centralized deps
+from app.infrastructure.database.models import UserModel  # User model
+from app.config.settings import settings  # Settings
 
 router = APIRouter()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("/auth/register", response_model=RegisterResponse, tags=["Auth"])
-def register_user(payload: RegisterRequest, db: Session = Depends(get_db)):
-    user_manager = UserManager(db)
+def register_user(
+    payload: RegisterRequest,
+    db: Session = Depends(get_db),
+    user_repo: UserRepository = Depends(get_user_repository),
+):
+    """Registers a new user."""
+    user_manager = UserManager(user_repo)  # UserManager handles password hashing
     existing_user = user_manager.get_user_by_email(payload.email)
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User with that email already exists."
+            detail="User with that email already exists.",
         )
-    
+
     new_user = user_manager.create_user(
-        email=payload.email,
-        password=payload.password,
-        username=payload.username
+        email=payload.email, password=payload.password, username=payload.username
     )
-    if not new_user:
+    if not new_user:  # Defensive check
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create user (database error)."
+            detail="Failed to create user (database error).",
         )
-    
+
     return RegisterResponse(
         id=new_user.id,
         email=new_user.email,
         username=new_user.username,
-        created_at=new_user.created_at.isoformat()
+        created_at=new_user.created_at.isoformat(),
     )
 
-@router.post("/auth/login", response_model=TokenResponse, tags=["Auth"])
-def login_user(payload: LoginRequest, db: Session = Depends(get_db)):
-    user_manager = UserManager(db)
-    user = user_manager.get_user_by_email(payload.email)
-    if not user or not user_manager.verify_password(payload.password, user.password_hash):
+
+@router.post("/auth/token", response_model=TokenResponse, tags=["Auth"])  # Correct URL
+def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+    user_repo: UserRepository = Depends(get_user_repository),
+):
+    """
+    Logs in a user and returns a JWT access token.  Uses OAuth2PasswordRequestForm.
+    """
+    user_manager = UserManager(user_repo)
+    user = user_manager.get_user_by_username(
+        form_data.username
+    )  # Authenticate by username
+    if not user or not user_manager.verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials."
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
-    
-    auth_service = AuthService()
-    token = auth_service.generate_token(user_id=user.id, email=user.email)
-    return TokenResponse(access_token=token)
+
+    # Create the JWT with the 'sub' claim set to the *username*
+    access_token = create_access_token(
+        data={"sub": user.username},  # Use USERNAME as the subject
+        expires_delta=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES,
+    )
+    return TokenResponse(access_token=access_token, token_type="bearer")
+
 
 @router.get("/auth/me", response_model=UserResponse, tags=["Auth"])
-def get_current_user(
-    current_user: UserModel = Depends(AuthService().get_current_user),
-):
+def read_users_me(current_user: UserModel = Depends(get_current_user)):
+    """Gets the current user's profile."""
     return UserResponse(
         id=current_user.id,
         email=current_user.email,
         username=current_user.username,
-        created_at=current_user.created_at.isoformat()
+        display_name=current_user.display_name,
+        avatar_url=current_user.avatar_url,
+        created_at=current_user.created_at.isoformat(),
     )
+
 
 @router.get("/auth/refresh", response_model=TokenResponse, tags=["Auth"])
-def refresh_token(
-    current_user: UserModel = Depends(AuthService().get_current_user),
-):
-    auth_service = AuthService()
-    new_token = auth_service.generate_token(
-        user_id=current_user.id,
-        email=current_user.email
+def refresh_token(current_user: UserModel = Depends(get_current_user)):
+    """Refreshes the access token (basic example; no blacklist)."""
+    access_token = create_access_token(
+        data={"sub": current_user.username},  # Use USERNAME
+        expires_delta=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES,
     )
-    return TokenResponse(access_token=new_token)
+    return TokenResponse(access_token=access_token, token_type="bearer")
 
-# -------------------------------------------------------------------------
-# NEW ENDPOINT: PUT /auth/me
-# -------------------------------------------------------------------------
+
 @router.put("/auth/me", response_model=UserResponse, tags=["Auth"])
 def update_current_user_profile(
     payload: ProfileUpdate,
-    current_user: UserModel = Depends(AuthService().get_current_user),
-    db: Session = Depends(get_db)
+    current_user: UserModel = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    user_repo: UserRepository = Depends(get_user_repository),
 ):
-    """
-    Update the current user's profile with partial updates.
-    Example fields: username, display_name, avatar_url, email.
-    """
-    user_manager = UserManager(db)
-
-    # Convert payload to dict, ignoring fields not set by client
-    updates_dict = payload.dict(exclude_unset=True)
+    """Updates the current user's profile (partial updates)."""
+    user_manager = UserManager(user_repo)
+    updates_dict = payload.dict(
+        exclude_unset=True
+    )  # Convert to dict, excluding unset fields
 
     updated_user = user_manager.update_user_profile(
-        user_id=current_user.id,
-        updates=updates_dict
+        user_id=current_user.id, updates=updates_dict
     )
 
-    if not updated_user:
+    if not updated_user:  # Defensive check
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found or could not be updated."
+            detail="User not found or could not be updated.",
         )
-
     return UserResponse(
         id=updated_user.id,
         email=updated_user.email,
         username=updated_user.username,
-        created_at=updated_user.created_at.isoformat()
+        display_name=updated_user.display_name,
+        avatar_url=updated_user.avatar_url,
+        created_at=updated_user.created_at.isoformat(),
     )
