@@ -1,97 +1,106 @@
 # app/api/dependencies.py
-import os
+"""
+Dependency injection setup for CRAVE Trinity Backend.
+
+This module sets up dependencies for:
+  - Database sessions
+  - User and craving repositories
+  - Authentication
+"""
+
 from typing import Generator
-
-from sqlalchemy import create_engine, exc
-from sqlalchemy.orm import sessionmaker, Session
 from fastapi import Depends, HTTPException, status, Request
-from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
-from app.infrastructure.database.repository import CravingRepository, UserRepository  # Import UserRepository
-from app.infrastructure.database.models import UserModel # Import UserModel
-from app.config.settings import settings  # Import settings
+from jose import jwt, JWTError
+from sqlalchemy import create_engine, text #NEW
+from sqlalchemy.orm import Session
 
-# Retrieve the database URL from environment variables.
-DATABASE_URL = os.getenv("SQLALCHEMY_DATABASE_URI", "postgresql://postgres:password@db:5432/crave_db")
+from app.config.settings import Settings
+from app.infrastructure.database.models import UserModel
+from app.infrastructure.database.session import SessionLocal
+from app.infrastructure.database.repository import UserRepository, CravingRepository
+from app.core.use_cases.initialize_database import initialize_database, seed_demo_users  # NEW
+from app.infrastructure.vector_db.vector_repository import VectorRepository
 
-# Create the SQLAlchemy engine.
-engine = create_engine(DATABASE_URL)
 
-# Create a configured session class.
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+settings = Settings()
+engine = create_engine(settings.DATABASE_URL) # Moved outside init_db
 
-def init_db() -> None:
-    """
-    Initialize the database connection.
-
-    This function attempts to connect to the database and can be extended
-    to include migration or seeding logic.
-    """
-    try:
-        with engine.connect() as connection:
-            # Execute a simple query to validate the connection.
-            connection.execute("SELECT 1")
-        print("Database connection established successfully.")
-    except Exception as e:
-        print("Error establishing database connection:", e)
-
-def get_db() -> Generator[Session, None, None]:
-    """
-    FastAPI dependency that provides a database session.
-
-    Yields a SQLAlchemy session and ensures it is closed after the request.
-    """
+def get_db() -> Generator:
+    """Provide a database session for each request."""
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
 
-def get_craving_repository(db: Session = Depends(get_db)) -> CravingRepository:
-    """
-    FastAPI dependency that provides an instance of the CravingRepository.
+def get_user_repository(db: Session = Depends(get_db)) -> UserRepository:
+    """Provide a UserRepository instance."""
+    return UserRepository(db)
 
-    Uses the provided database session to instantiate the repository responsible
-    for all craving-related data operations.
-    """
+def get_craving_repository(db: Session = Depends(get_db)) -> CravingRepository:
+    """Provide a CravingRepository instance."""
     return CravingRepository(db)
 
-
-# Add the following for authentication:
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  # Use "token" as the token URL (FastAPI default)
-
-async def get_current_user(request: Request, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)) -> UserModel:
-    """
-    Dependency to get the current user from the JWT token.
-
-    Raises:
-        HTTPException: 401 Unauthorized if authentication fails.
-        HTTPException: 404 Not Found if the user doesn't exist.
-    """
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+def get_current_user(
+    request: Request,
+    db: Session = Depends(get_db)
+) -> UserModel:
+    """Authenticate user based on JWT in request header and return user object."""
+    # Extract token from Authorization header
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    token = auth_header.split(" ")[1]  # Get the token part
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-        #token_data = TokenData(username=username) # You might have a TokenData Pydantic model
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user_id: int = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        user = db.query(UserModel).filter(UserModel.id == user_id).first()
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        return user  # Correct return type
     except JWTError:
-        raise credentials_exception
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
-    user_repo = UserRepository(db)  # Use UserRepository
-    user = user_repo.get_by_username(username) # Get user by username.  You'll need to implement this in UserRepository
-
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return user
-
-def get_user_repository(db: Session = Depends(get_db)) -> UserRepository: # NEW
+# --- NEW FUNCTION ---
+def init_db(db: Session = Depends(get_db)):
     """
-    FastAPI dependency for UserRepository
+    Initialize the database. Creates tables, seeds demo data, and performs a health check.
     """
-    return UserRepository(db)
+    initialize_database(engine)  # Create tables if they don't exist
+    seed_demo_users(db)  # Add demo users
+
+    # Perform a basic database health check
+    try:
+        with engine.connect() as connection: # Use a connection!
+            connection.execute(text("SELECT 1"))
+            print("Database connection successful.")
+    except Exception as e:
+        print(f"Error establishing database connection: {e}")
+        raise  # Re-raise the exception to halt startup
+
+    # Initialize Pinecone index
+    try:
+        vector_repo = VectorRepository()
+        vector_repo.initialize_index()
+        print("Pinecone index initialized.")
+    except Exception as e:
+        print(f"Error initializing Pinecone index: {e}")
+        # Don't raise - Pinecone is optional
