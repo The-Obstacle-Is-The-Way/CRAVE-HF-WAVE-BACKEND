@@ -40,7 +40,7 @@ class RAGResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-@router.post("/api/ai/insights", tags=["AI"], response_model=InsightResponse)
+@router.post("/ai/insights", tags=["AI"], response_model=InsightResponse)
 async def ai_insights(user_id: int, query: str | None = None): # No longer using Depends here for user_id.  We'll get it from get_current_user
     """
     Generate AI insights based on a user's craving history.
