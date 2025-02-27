@@ -23,15 +23,18 @@ from app.infrastructure.database.repository import (
 from app.infrastructure.database.models import UserModel
 from app.config.settings import settings  # Import settings
 
-# Retrieve the database URL (fallback to a default if not set, good for local dev)
-DATABASE_URL = os.getenv(
-   "SQLALCHEMY_DATABASE_URI", "postgresql://postgres:password@db:5432/crave_db"
+# Use settings.SQLALCHEMY_DATABASE_URI which is already configured to read from DATABASE_URL
+# This correctly uses the DATABASE_URL environment variable from Hugging Face Spaces
+DATABASE_URL = settings.SQLALCHEMY_DATABASE_URI
+
+# Create the SQLAlchemy engine
+engine = create_engine(
+    DATABASE_URL,
+    # Add additional connection parameters for Railway's hosted PostgreSQL
+    connect_args={"sslmode": "require"} if "rlwy.net" in DATABASE_URL else {}
 )
 
-# Create the SQLAlchemy engine.
-engine = create_engine(DATABASE_URL)
-
-# Create a configured session class.
+# Create a configured session class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
