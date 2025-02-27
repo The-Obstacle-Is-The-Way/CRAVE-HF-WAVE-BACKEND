@@ -19,5 +19,4 @@ class Craving(BaseModel):
     created_at: datetime
 
     class Config:
-        # Enable compatibility with ORM objects (e.g., SQLAlchemy models)
-        orm_mode = True
+        from_attributes = True
