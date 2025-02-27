@@ -4,6 +4,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status
 from sqlalchemy.orm import Session
+from pydantic import ConfigDict  # Import ConfigDict
 
 # Internal imports
 from app.core.services.voice_logs_service import VoiceLogsService
@@ -134,44 +135,4 @@ def get_transcript(
         raise HTTPException(status_code=404, detail="Voice log not found or inaccessible.")
 
     return {
-        "voice_log_id": voice_log.id,
-        "transcribed_text": voice_log.transcribed_text,
-        "transcription_status": voice_log.transcription_status
-    }
-
-
-@router.get("/", response_model=list[VoiceLogOut])
-def list_voice_logs(
-    db: Session = Depends(get_db),
-    current_user: UserModel = Depends(AuthService().get_current_user),
-):
-    """
-    GET /api/voice-logs/
-    --------------------
-    Returns a list of all non-deleted voice logs belonging to the current user.
-    """
-    repo = VoiceLogsRepository(db)
-    logs = repo.list_by_user(current_user.id)
-    return [VoiceLogOut(**log.dict()) for log in logs]
-
-
-@router.delete("/{voice_log_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_voice_log(
-    voice_log_id: int,
-    db: Session = Depends(get_db),
-    current_user: UserModel = Depends(AuthService().get_current_user),
-):
-    """
-    DELETE /api/voice-logs/{voice_log_id}
-    -------------------------------------
-    Soft-delete a voice log if it belongs to the current user.
-    """
-    repo = VoiceLogsRepository(db)
-    voice_log = repo.get_by_id(voice_log_id)
-    if not voice_log or voice_log.user_id != current_user.id:
-        raise HTTPException(status_code=404, detail="Voice log not found or inaccessible.")
-
-    success = repo.soft_delete(voice_log_id)
-    if not success:
-        raise HTTPException(status_code=500, detail="Failed to delete voice log.")
-    return  # 204 No Content
+        "voice_log_id": voice_log.id
