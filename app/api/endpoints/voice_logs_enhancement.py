@@ -4,6 +4,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any, Optional
+from pydantic import ConfigDict #NEW
 
 from app.infrastructure.auth.auth_service import AuthService
 from app.infrastructure.database.session import get_db
@@ -11,7 +12,7 @@ from app.infrastructure.database.models import UserModel
 from app.infrastructure.database.voice_logs_repository import VoiceLogsRepository
 from app.core.services.voice_logs_service import VoiceLogsService
 from app.infrastructure.external.transcription_service import TranscriptionService
-from app.core.entities.voice_log_schemas import VoiceLogOut
+from app.core.entities.voice_log_schemas import VoiceLogCreate, VoiceLogOut
 from app.core.entities.voice_log import VoiceLog
 
 router = APIRouter()
