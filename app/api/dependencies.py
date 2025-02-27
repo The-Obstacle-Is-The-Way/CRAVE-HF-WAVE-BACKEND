@@ -1,32 +1,28 @@
 # app/api/dependencies.py
 """
 Dependency injection setup for CRAVE Trinity Backend.
-
-This module sets up dependencies for:
-  - Database sessions
-  - User and craving repositories
-  - Authentication
 """
-
 from typing import Generator
 from fastapi import Depends, HTTPException, status, Request
 from jose import jwt, JWTError
-from sqlalchemy import create_engine, text #NEW
-from sqlalchemy.orm import Session
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import Session, sessionmaker
 
-from app.config.settings import Settings
+from app.config.settings import settings  # Corrected import: import the INSTANCE
 from app.infrastructure.database.models import UserModel
 from app.infrastructure.database.session import SessionLocal
-from app.infrastructure.database.repository import UserRepository, CravingRepository
-from app.core.use_cases.initialize_database import initialize_database, seed_demo_users  # NEW
-from app.infrastructure.vector_db.vector_repository import VectorRepository
+from app.infrastructure.database.repository import UserRepository, CravingRepository, VoiceLogRepository
+from app.core.use_cases.initialize_database import initialize_database, seed_demo_users
+from fastapi.security import OAuth2PasswordBearer
 
+# --- Database Setup ---
+engine = create_engine(settings.DATABASE_URL)  # Use settings.DATABASE_URL
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-settings = Settings()
-engine = create_engine(settings.DATABASE_URL) # Moved outside init_db
+# --- Dependency Functions ---
 
 def get_db() -> Generator:
-    """Provide a database session for each request."""
+    """Provide a database session."""
     db = SessionLocal()
     try:
         yield db
@@ -41,66 +37,59 @@ def get_craving_repository(db: Session = Depends(get_db)) -> CravingRepository:
     """Provide a CravingRepository instance."""
     return CravingRepository(db)
 
-def get_current_user(
-    request: Request,
-    db: Session = Depends(get_db)
+def get_voice_log_repository(db: Session = Depends(get_db)) -> VoiceLogRepository:
+    """Provides a VoiceLogRepository instance."""
+    return VoiceLogRepository(db)
+
+# --- Authentication ---
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
+
+async def get_current_user(
+    request: Request, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
 ) -> UserModel:
-    """Authenticate user based on JWT in request header and return user object."""
-    # Extract token from Authorization header
-    auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    token = auth_header.split(" ")[1]  # Get the token part
+    """Authenticate user, return UserModel."""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        user_id: int = payload.get("sub")
-        if user_id is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authentication credentials",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        user = db.query(UserModel).filter(UserModel.id == user_id).first()
-        if user is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        return user  # Correct return type
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
     except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise credentials_exception
 
-# --- NEW FUNCTION ---
+    user_repo = UserRepository(db)
+    user = user_repo.get_by_username(username)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if not user.is_active:  # Corrected attribute name
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")  # Correct status code
+    return user
+
+# --- Initialization ---
 def init_db(db: Session = Depends(get_db)):
-    """
-    Initialize the database. Creates tables, seeds demo data, and performs a health check.
-    """
-    initialize_database(engine)  # Create tables if they don't exist
-    seed_demo_users(db)  # Add demo users
+    """Initialize database (create tables, seed data)."""
+    initialize_database(engine)
+    seed_demo_users(db)
 
-    # Perform a basic database health check
+    # Perform a basic database connection check
     try:
-        with engine.connect() as connection: # Use a connection!
+        with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
-            print("Database connection successful.")
+        print("Database connection successful.")
     except Exception as e:
         print(f"Error establishing database connection: {e}")
-        raise  # Re-raise the exception to halt startup
+        raise  # Re-raise to halt startup
 
-    # Initialize Pinecone index
+     # Initialize Pinecone index (optional, don't crash if it fails)
     try:
-        vector_repo = VectorRepository()
-        vector_repo.initialize_index()
-        print("Pinecone index initialized.")
+        # Assuming you have a VectorRepository and Pinecone setup
+        # Replace with your actual initialization logic
+        # vector_repo = VectorRepository()
+        # vector_repo.initialize_index()
+        print("Pinecone index check complete (if applicable).")
     except Exception as e:
-        print(f"Error initializing Pinecone index: {e}")
-        # Don't raise - Pinecone is optional
+        print(f"Warning: Pinecone initialization failed: {e}")

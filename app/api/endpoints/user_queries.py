@@ -5,11 +5,11 @@ Endpoints for querying and managing user-specific craving data.
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, ConfigDict #NEW, import ConfigDict
+from pydantic import BaseModel, ConfigDict  # Import ConfigDict
 from sqlalchemy.orm import Session
 
 from app.infrastructure.database.repository import CravingRepository
-from app.api.dependencies import get_db, get_current_user  # Import get_db and get_current_user
+from app.api.dependencies import get_db, get_current_user
 from app.infrastructure.database.models import UserModel
 
 router = APIRouter()
@@ -22,14 +22,13 @@ class Craving(BaseModel):
     intensity: int
     created_at: str
     updated_at: str
-    model_config = ConfigDict(from_attributes=True) #NEW
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CravingsResponse(BaseModel):
     """Response model for a list of cravings."""
     cravings: List[Craving]
-    model_config = ConfigDict(from_attributes=True) #NEW
-
+    model_config = ConfigDict(from_attributes=True)
 
 @router.get("/user/queries", response_model=CravingsResponse, tags=["Cravings"])
 async def get_user_cravings(
@@ -40,16 +39,15 @@ async def get_user_cravings(
     Retrieves all cravings for the currently authenticated user.
     """
     craving_repo = CravingRepository(db)
-    db_cravings = craving_repo.get_cravings_for_user(current_user.id)  #Use the current user id.
+    db_cravings = craving_repo.get_cravings_for_user(current_user.id)
 
-    # Convert database models to Pydantic models
     cravings = [
         Craving(
             id=c.id,
             user_id=c.user_id,
             description=c.description,
             intensity=c.intensity,
-            created_at=c.created_at.isoformat(),  # Format DateTime as string
+            created_at=c.created_at.isoformat(),
             updated_at=c.updated_at.isoformat(),
         )
         for c in db_cravings
@@ -64,17 +62,14 @@ async def delete_user_craving(
     db: Session = Depends(get_db)
 ):
     """
-    Deletes a specific craving for the authenticated user.
-    Implements a soft delete by setting 'is_deleted' to True.
+    Deletes a specific craving for the authenticated user. Implements soft delete.
     """
-
     craving_repo = CravingRepository(db)
     craving = craving_repo.get_craving_by_id(craving_id)
 
     if not craving:
         raise HTTPException(status_code=404, detail="Craving not found")
 
-    # Ensure the craving belongs to the current user
     if craving.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to delete this craving")
 

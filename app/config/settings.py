@@ -49,4 +49,4 @@ class Settings(BaseSettings):
 
 
 # Singleton instance for the application
-settings = Settings()
+settings = Settings() # Create instance here
