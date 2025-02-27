@@ -1,47 +1,69 @@
 # app/infrastructure/auth/jwt_handler.py
 """
-Utility functions for creating and decoding JWTs.
+JWT token handling using the Factory Method pattern.
+Follows Single Responsibility Principle by focusing only on JWT operations.
 """
 
+import os
+import uuid
 from datetime import datetime, timedelta
-from jose import jwt
-from app.config.settings import settings  # Import settings
+from typing import Dict, Union, Optional
+
+from jose import jwt, JWTError
+
+from app.config.settings import settings
 
 
-def create_access_token(data: dict, expires_delta: int | None = None) -> str:
+def create_access_token(data: Dict, expires_delta: Optional[int] = None) -> str:
     """
     Creates a JWT access token.
-
+    Factory Method: This function creates and returns a token with standard claims.
+    
     Args:
-        data: Dictionary of claims to include in the token (e.g., {"sub": user_id}).
-        expires_delta: Optional expiration time in minutes.
-
+        data: Dictionary of custom claims to include in the token
+        expires_delta: Optional expiration time in minutes
+        
     Returns:
-        The encoded JWT string.
+        str: The encoded JWT string
     """
     to_encode = data.copy()
+    
+    # Set expiration time
     if expires_delta:
         expire = datetime.utcnow() + timedelta(minutes=expires_delta)
     else:
         expire = datetime.utcnow() + timedelta(
             minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
-        )  # Fallback
-    to_encode.update({"exp": expire})
+        )
+    
+    # Add standard claims
+    jti = str(uuid.uuid4())  # Unique token ID to support blacklisting if needed
+    to_encode.update({
+        "exp": expire,
+        "iat": datetime.utcnow(),
+        "jti": jti,
+        "type": "access"
+    })
+    
+    # Encode the token
     encoded_jwt = jwt.encode(
         to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM
     )
     return encoded_jwt
 
 
-def decode_access_token(token: str) -> dict:
+def decode_access_token(token: str) -> Dict:
     """
-    Decodes a JWT access token.  Raises JWTError if invalid.
-
+    Decodes and validates a JWT access token.
+    
     Args:
-        token: The JWT string.
-
+        token: The JWT string
+        
     Returns:
-        The decoded payload (dictionary of claims).
+        Dict: The decoded payload
+        
+    Raises:
+        JWTError: If token is invalid or expired
     """
     try:
         payload = jwt.decode(
@@ -49,4 +71,4 @@ def decode_access_token(token: str) -> dict:
         )
         return payload
     except JWTError:
-        raise  # Re-raise for consistent error handling
+        raise
