@@ -5,7 +5,7 @@ Endpoints for querying and managing user-specific craving data.
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from app.infrastructure.database.repository import CravingRepository
@@ -22,10 +22,14 @@ class Craving(BaseModel):
     intensity: int
     created_at: str
     updated_at: str
+    model_config = ConfigDict(from_attributes=True)
+
 
 class CravingsResponse(BaseModel):
     """Response model for a list of cravings."""
     cravings: List[Craving]
+    model_config = ConfigDict(from_attributes=True)
+
 
 @router.get("/user/queries", response_model=CravingsResponse, tags=["Cravings"])
 async def get_user_cravings(

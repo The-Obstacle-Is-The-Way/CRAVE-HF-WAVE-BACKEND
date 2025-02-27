@@ -1,7 +1,7 @@
 # app/api/endpoints/ai_endpoints.py
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.core.use_cases.generate_craving_insights import generate_insights
 from app.core.services.analytics_service import analyze_patterns, list_personas
@@ -17,12 +17,17 @@ router = APIRouter()
 
 class InsightResponse(BaseModel):
     insights: str
+    model_config = ConfigDict(from_attributes=True)
 
 class PatternsResponse(BaseModel):
     patterns: dict
+    model_config = ConfigDict(from_attributes=True)
+
 
 class PersonasResponse(BaseModel):
     personas: List[str]
+    model_config = ConfigDict(from_attributes=True)
+
 
 class RAGRequest(BaseModel):
     query: str
@@ -32,6 +37,8 @@ class RAGRequest(BaseModel):
 
 class RAGResponse(BaseModel):
     answer: str
+    model_config = ConfigDict(from_attributes=True)
+
 
 @router.post("/api/ai/insights", tags=["AI"], response_model=InsightResponse)
 async def ai_insights(user_id: int, query: str | None = None): # No longer using Depends here for user_id.  We'll get it from get_current_user

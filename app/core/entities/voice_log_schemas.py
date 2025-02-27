@@ -1,26 +1,14 @@
-# File: app/core/entities/voice_log_schemas.py
-"""
-Pydantic schemas specifically for VoiceLog endpoints.
-We separate these from 'voice_log.py' domain objects to keep a boundary
-between the domain model and the HTTP request/response layer.
-"""
+# app/core/entities/voice_log_schemas.py
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict  # Import ConfigDict
 
 class VoiceLogCreate(BaseModel):
-    """
-    Schema for creating a new voice log via file upload.
-    User ID is derived from the authenticated user, not from the request body.
-    """
-    # Potentially add fields if you want the user to supply any metadata
-    # like 'title' or 'description' about their voice note.
-    pass
+    """Schema for creating a new voice log."""
+    pass  # No fields needed for creation (user_id from auth)
 
 class VoiceLogOut(BaseModel):
-    """
-    Read-only schema returned to the client after creating a voice log or retrieving one.
-    """
+    """Read-only schema for voice logs."""
     id: int
     user_id: int
     file_path: str
@@ -28,6 +16,4 @@ class VoiceLogOut(BaseModel):
     transcribed_text: Optional[str] = None
     transcription_status: Optional[str] = None
     is_deleted: bool
-
-    class Config:
-        orm_mode = True  # Allows populating directly from ORM model objects
+    model_config = ConfigDict(from_attributes=True)  # Use ConfigDict and from_attributes
