@@ -68,11 +68,15 @@ def login_for_access_token(
 ):
     """
     Logs in a user and returns a JWT access token.  Uses OAuth2PasswordRequestForm.
+    
+    The form_data.username field is expected to contain the user's email address.
+    OAuth2PasswordRequestForm always uses 'username' as the field name, even when
+    it contains an email address.
     """
     user_manager = UserManager(user_repo)
-    user = user_manager.get_user_by_username(
-        form_data.username
-    )  # Authenticate by username
+    # Change: Look up user by email instead of username
+    user = user_manager.get_user_by_email(form_data.username)
+    
     if not user or not user_manager.verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -80,9 +84,10 @@ def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Create the JWT with the 'sub' claim set to the *username*
+    # Create the JWT with the 'sub' claim set to the user's username if available, otherwise use email
+    sub_value = user.username if user.username else user.email
     access_token = create_access_token(
-        data={"sub": user.username},  # Use USERNAME as the subject
+        data={"sub": sub_value},
         expires_delta=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES,
     )
     return TokenResponse(access_token=access_token, token_type="bearer")
@@ -104,8 +109,9 @@ def read_users_me(current_user: UserModel = Depends(get_current_user)):
 @router.get("/auth/refresh", response_model=TokenResponse, tags=["Auth"])
 def refresh_token(current_user: UserModel = Depends(get_current_user)):
     """Refreshes the access token (basic example; no blacklist)."""
+    sub_value = current_user.username if current_user.username else current_user.email
     access_token = create_access_token(
-        data={"sub": current_user.username},  # Use USERNAME
+        data={"sub": sub_value},
         expires_delta=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES,
     )
     return TokenResponse(access_token=access_token, token_type="bearer")
