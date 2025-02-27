@@ -1,13 +1,8 @@
-# ─────────────────────────────────────────────────────────────────────────────
-# FILE: app/config/settings.py
-#
-# Purpose:
-#   - Central config using Pydantic BaseSettings.
-#   - On HF, set the secret `DATABASE_URL` to your Railway connection string.
-# ─────────────────────────────────────────────────────────────────────────────
+# app/config/settings.py
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 from typing import Dict
+import os
 
 class Settings(BaseSettings):
     # ------------------------------------------------------------------------
@@ -18,13 +13,13 @@ class Settings(BaseSettings):
 
     # ------------------------------------------------------------------------
     # Database
-    #   - Default to a local fallback if no env is set. 
-    #   - But typically we want HF to pick up "DATABASE_URL" from secrets.
     # ------------------------------------------------------------------------
+    # We prioritize DATABASE_URL over SQLALCHEMY_DATABASE_URI
+    # This ensures compatibility with both Hugging Face and Railway
     SQLALCHEMY_DATABASE_URI: str = Field(
-        default="postgresql://postgres:password@localhost:5432/crave_db",
+        # Look for DATABASE_URL first, then fall back to default
+        default=os.environ.get("DATABASE_URL", "postgresql://postgres:password@localhost:5432/crave_db"),
         env="DATABASE_URL"  
-        # ^ IMPORTANT: Now it reads from the environment variable "DATABASE_URL"
     )
 
     # ------------------------------------------------------------------------
@@ -55,7 +50,17 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------------
     model_config = SettingsConfigDict(
         env_file=".env",
-        env_file_encoding="utf-8"
+        env_file_encoding="utf-8",
+        # Extra settings to ensure we read from environment variables properly
+        case_sensitive=False,  # Allow for case insensitive environment variables
+        extra="ignore"  # Ignore extra fields
     )
 
+# Initialize settings
 settings = Settings()
+
+# Validate settings at module level
+if "localhost" in settings.SQLALCHEMY_DATABASE_URI and os.environ.get("DATABASE_URL"):
+    # Override if we detect a mismatch
+    print("WARNING: Overriding SQLALCHEMY_DATABASE_URI with DATABASE_URL from environment")
+    settings.SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
