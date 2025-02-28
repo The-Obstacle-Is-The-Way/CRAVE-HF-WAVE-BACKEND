@@ -7,18 +7,12 @@
 # ─────────────────────────────────────────────────────────────────────────────
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import os
 from app.config.settings import settings
 
-# Use the value from settings, which should now properly check both environment variables
+# Create an engine with the database URL from settings
+# Add SSL requirement for Railway PostgreSQL connections
 DATABASE_URL = settings.SQLALCHEMY_DATABASE_URI
-
-# Debug information
-print(f"Connecting to database: {DATABASE_URL}")
-
-# Enhanced Railway detection to support both domains
-is_railway = any(domain in DATABASE_URL for domain in ["railway.internal", "rlwy.net"])
-print(f"Railway environment detected: {is_railway}")
+is_railway = "rlwy.net" in DATABASE_URL
 
 engine = create_engine(
     DATABASE_URL,
