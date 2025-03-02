@@ -487,6 +487,6 @@ Any behavioral insights should be viewed as informational only, and users should
 ---
 
 ## 📜 License  
+This project is licensed under the [Apache 2.0 License](./LICENSE).
 
-This project is licensed under the **MIT License**.  
 > CRAVE: Because understanding your cravings shouldn't be complicated 🍫
